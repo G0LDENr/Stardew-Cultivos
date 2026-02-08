@@ -559,6 +559,128 @@ button:hover {
     margin-top: 10px;
 }
 
+/* Agrega esto al final de tu archivo styles.css */
+
+/* Estilos para buscadores */
+.search-container {
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 15px;
+    padding-left: 45px;
+    border-radius: var(--border-radius-sm);
+    border: 2px solid var(--primary);
+    background-color: var(--secondary);
+    color: var(--light);
+    font-size: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23ffd166' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 15px center;
+    background-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(231, 111, 81, 0.2);
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Estilos para select de calculadora más grande */
+#calcItem {
+    height: 200px;
+    padding: 10px;
+    font-size: 14px;
+    background-color: var(--secondary);
+    border: 2px solid var(--primary);
+    border-radius: var(--border-radius-sm);
+    color: var(--light);
+}
+
+#calcItem option {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--primary);
+}
+
+#calcItem option:hover {
+    background-color: var(--accent);
+}
+
+#calcItem option:checked {
+    background-color: var(--accent);
+    color: white;
+}
+
+/* Contador de resultados mejorado */
+.results h2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#resultsCount, #treesCount, #fishCount, #animalsCount, #mushroomsCount {
+    font-size: 1rem;
+    color: var(--accent-light);
+    background-color: var(--primary);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: normal;
+}
+
+/* Mensaje cuando no hay resultados */
+.no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.no-results i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: var(--accent);
+}
+
+/* Highlight en resultados de búsqueda */
+.highlight {
+    background-color: rgba(255, 209, 102, 0.2);
+    color: var(--light);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+/* Búsqueda en tiempo real - indicador */
+.searching-indicator {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 0.9rem;
+    color: var(--accent-light);
+    opacity: 0.7;
+}
+
+/* Para búsqueda en calculadora */
+#searchCalcItem {
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .search-input {
+        padding: 10px 12px;
+        padding-left: 40px;
+        font-size: 14px;
+    }
+    
+    #calcItem {
+        height: 150px;
+    }
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .container, .calculator-container {

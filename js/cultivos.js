@@ -1009,3 +1009,393 @@ function getSuggestions() {
         ${resultsContainer.innerHTML}
     `;
 }
+
+// Agrega estas funciones al principio de tu archivo script.js
+
+// Variables globales para búsqueda
+let searchTimeout = null;
+
+// Función para buscar en tiempo real
+function setupRealTimeSearch() {
+    // Cultivos
+    const searchCropInput = document.getElementById('searchCropName');
+    if (searchCropInput) {
+        searchCropInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchCrops();
+            }, 300);
+        });
+    }
+    
+    // Árboles
+    const searchTreeInput = document.getElementById('searchTreeName');
+    if (searchTreeInput) {
+        searchTreeInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchTrees();
+            }, 300);
+        });
+    }
+    
+    // Peces
+    const searchFishInput = document.getElementById('searchFishName');
+    if (searchFishInput) {
+        searchFishInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchFish();
+            }, 300);
+        });
+    }
+    
+    // Animales
+    const searchAnimalInput = document.getElementById('searchAnimalName');
+    if (searchAnimalInput) {
+        searchAnimalInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchAnimals();
+            }, 300);
+        });
+    }
+    
+    // Hongos
+    const searchMushroomInput = document.getElementById('searchMushroomName');
+    if (searchMushroomInput) {
+        searchMushroomInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchMushrooms();
+            }, 300);
+        });
+    }
+    
+    // Calculadora
+    const searchCalcInput = document.getElementById('searchCalcItem');
+    if (searchCalcInput) {
+        searchCalcInput.addEventListener('input', function() {
+            filterCalculatorItems(this.value);
+        });
+    }
+}
+
+// Función para filtrar items en calculadora
+function filterCalculatorItems(searchTerm) {
+    const select = document.getElementById('calcItem');
+    const options = select.options;
+    searchTerm = searchTerm.toLowerCase().trim();
+    
+    // Si está vacío, mostrar todos
+    if (!searchTerm) {
+        for (let i = 0; i < options.length; i++) {
+            options[i].style.display = '';
+        }
+        return;
+    }
+    
+    // Filtrar opciones
+    let visibleCount = 0;
+    for (let i = 0; i < options.length; i++) {
+        const option = options[i];
+        const text = option.textContent.toLowerCase();
+        
+        if (text.includes(searchTerm)) {
+            option.style.display = '';
+            visibleCount++;
+            
+            // Resaltar texto coincidente
+            const originalText = option.textContent;
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            option.innerHTML = originalText.replace(regex, '<span class="highlight">$1</span>');
+        } else {
+            option.style.display = 'none';
+        }
+    }
+    
+    // Si solo hay un resultado, seleccionarlo automáticamente
+    if (visibleCount === 1) {
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].style.display !== 'none' && options[i].value) {
+                select.value = options[i].value;
+                break;
+            }
+        }
+    }
+}
+
+// Modificar las funciones de búsqueda existentes para incluir filtro por nombre
+
+function searchCrops() {
+    const season = document.getElementById('season').value;
+    const year = parseInt(document.getElementById('year').value);
+    const growthTime = document.getElementById('growthTime').value;
+    const cropType = document.getElementById('cropType').value;
+    const searchTerm = document.getElementById('searchCropName')?.value.toLowerCase().trim() || '';
+    
+    let filteredCrops = cropsDatabase.filter(crop => {
+        if (crop.year > year) return false;
+        if (season !== 'all' && !crop.seasons.includes(season)) return false;
+        if (growthTime !== 'all' && crop.growthTime > parseInt(growthTime)) return false;
+        if (cropType !== 'all' && crop.type !== cropType) return false;
+        
+        // Filtro por nombre
+        if (searchTerm && !crop.name.toLowerCase().includes(searchTerm)) {
+            return false;
+        }
+        
+        return true;
+    });
+    
+    displayCrops(filteredCrops, searchTerm);
+}
+
+function searchTrees() {
+    const season = document.getElementById('treeSeason').value;
+    const treeType = document.getElementById('treeType').value;
+    const searchTerm = document.getElementById('searchTreeName')?.value.toLowerCase().trim() || '';
+    
+    let filteredTrees = treesDatabase.filter(tree => {
+        if (season !== 'all' && season !== 'multiple' && !tree.seasons.includes(season)) return false;
+        if (season === 'multiple' && tree.seasons.length <= 1) return false;
+        if (treeType !== 'all') {
+            if (treeType === 'common' && tree.saplingPrice >= 4000) return false;
+            if (treeType === 'exotic' && tree.saplingPrice < 4000) return false;
+        }
+        
+        // Filtro por nombre
+        if (searchTerm && !tree.name.toLowerCase().includes(searchTerm) && 
+            !tree.fruitName.toLowerCase().includes(searchTerm)) {
+            return false;
+        }
+        
+        return true;
+    });
+    
+    displayTrees(filteredTrees, searchTerm);
+}
+
+function searchFish() {
+    const season = document.getElementById('fishSeason').value;
+    const location = document.getElementById('fishLocation').value;
+    const weather = document.getElementById('fishWeather').value;
+    const time = document.getElementById('fishTime').value;
+    const searchTerm = document.getElementById('searchFishName')?.value.toLowerCase().trim() || '';
+    
+    let filteredFish = fishDatabase.filter(fish => {
+        if (season !== 'all' && season !== 'all-year' && !fish.seasons.includes(season)) {
+            if (fish.seasons[0] !== 'all-year') return false;
+        }
+        if (location !== 'all' && !fish.locations.includes(location)) return false;
+        if (weather !== 'all' && weather !== 'both' && fish.weather !== weather && fish.weather !== 'both') return false;
+        if (time !== 'all' && !fish.time.includes(time)) return false;
+        
+        // Filtro por nombre
+        if (searchTerm && !fish.name.toLowerCase().includes(searchTerm)) {
+            return false;
+        }
+        
+        return true;
+    });
+    
+    displayFish(filteredFish, searchTerm);
+}
+
+function searchAnimals() {
+    const animalType = document.getElementById('animalType').value;
+    const productType = document.getElementById('productType').value;
+    const productQuality = document.getElementById('productQuality').value;
+    const searchTerm = document.getElementById('searchAnimalName')?.value.toLowerCase().trim() || '';
+    
+    let filteredAnimals = animalsDatabase.filter(animal => {
+        if (animalType !== 'all' && animal.building !== animalType) return false;
+        if (productType !== 'all') {
+            if (productType === 'egg' && !animal.name.toLowerCase().includes('huevo')) return false;
+            if (productType === 'milk' && !animal.name.toLowerCase().includes('leche')) return false;
+            if (productType === 'wool' && animal.name !== 'Lana') return false;
+            if (productType === 'other' && 
+                animal.name.toLowerCase().includes('huevo') && 
+                animal.name.toLowerCase().includes('leche') && 
+                animal.name !== 'Lana') return false;
+        }
+        
+        // Filtro por nombre
+        if (searchTerm && !animal.name.toLowerCase().includes(searchTerm) && 
+            !animal.animal.toLowerCase().includes(searchTerm)) {
+            return false;
+        }
+        
+        return true;
+    });
+    
+    displayAnimals(filteredAnimals, searchTerm);
+}
+
+function searchMushrooms() {
+    const season = document.getElementById('mushroomSeason').value;
+    const location = document.getElementById('mushroomLocation').value;
+    const mushroomType = document.getElementById('mushroomType').value;
+    const searchTerm = document.getElementById('searchMushroomName')?.value.toLowerCase().trim() || '';
+    
+    let filteredMushrooms = mushroomsDatabase.filter(mushroom => {
+        if (season !== 'all' && !mushroom.seasons.includes(season)) return false;
+        if (location !== 'all' && !mushroom.locations.includes(location)) return false;
+        if (mushroomType !== 'all') {
+            if (mushroomType === 'common' && mushroom.price > 100) return false;
+            if (mushroomType === 'rare' && mushroom.price <= 100 && mushroom.price > 200) return false;
+            if (mushroomType === 'special' && mushroom.price <= 200) return false;
+        }
+        
+        // Filtro por nombre
+        if (searchTerm && !mushroom.name.toLowerCase().includes(searchTerm)) {
+            return false;
+        }
+        
+        return true;
+    });
+    
+    displayMushrooms(filteredMushrooms, searchTerm);
+}
+
+// Modificar funciones de display para resaltar búsqueda
+function displayCrops(crops, searchTerm = '') {
+    const container = document.getElementById('resultsContainer');
+    const countElement = document.getElementById('resultsCount');
+    
+    if (crops.length === 0) {
+        container.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-search fa-3x"></i>
+                <h3>No se encontraron cultivos</h3>
+                <p>${searchTerm ? `No hay cultivos que coincidan con "${searchTerm}"` : 'Intenta con otros filtros'}</p>
+            </div>
+        `;
+        countElement.textContent = '';
+        return;
+    }
+    
+    countElement.textContent = `(${crops.length} cultivos)`;
+    
+    let html = '';
+    
+    crops.forEach(crop => {
+        const profits = {
+            normal: (crop.sellPrices.normal || 0) - crop.price,
+            silver: (crop.sellPrices.silver || 0) - crop.price,
+            gold: (crop.sellPrices.gold || 0) - crop.price,
+            iridium: (crop.sellPrices.iridium || 0) - crop.price
+        };
+        
+        const getProfitClass = (profit) => {
+            if (profit >= 100) return "profit-high";
+            if (profit >= 30) return "profit-medium";
+            return "profit-low";
+        };
+        
+        const seasonClass = crop.seasons.length > 1 ? "multi-season-card" : `${crop.seasons[0]}-card`;
+        
+        // Resaltar texto de búsqueda si existe
+        let displayName = crop.name;
+        if (searchTerm) {
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            displayName = crop.name.replace(regex, '<span class="highlight">$1</span>');
+        }
+        
+        html += `
+        <div class="item-card crop-card ${seasonClass}">
+            <div class="item-header">
+                <div class="item-name">${displayName}</div>
+                <div>
+                    ${crop.seasons.map(season => 
+                        `<span class="season-tag tag-${season}">${seasonTranslations[season]}</span>`
+                    ).join('')}
+                </div>
+            </div>
+            
+            <div class="item-details">
+                <div class="item-detail">
+                    <strong>Crecimiento:</strong><br>
+                    ${crop.growthTime} días ${crop.regrowTime > 0 ? `+ ${crop.regrowTime}d (re-crece)` : ''}
+                </div>
+                <div class="item-detail">
+                    <strong>Precio semilla:</strong><br>
+                    ${crop.price}g
+                </div>
+                <div class="item-detail">
+                    <strong>Tipo:</strong><br>
+                    ${getCropTypeName(crop.type)}<br>
+                    Año ${crop.year}+
+                </div>
+                <div class="item-detail">
+                    <strong>Ganancia (Normal):</strong><br>
+                    <span class="${getProfitClass(profits.normal)}">+${profits.normal}g</span><br>
+                    ${crop.price > 0 ? `ROI: ${((profits.normal / crop.price) * 100).toFixed(0)}%` : ''}
+                </div>
+            </div>
+            
+            <div class="quality-prices">
+                <div class="quality-price-row header">
+                    <div>Calidad</div>
+                    <div class="quality-normal">Normal</div>
+                    <div class="quality-silver">Plata</div>
+                    <div class="quality-gold">Oro</div>
+                    <div class="quality-iridium">Iridio</div>
+                </div>
+                <div class="quality-price-row">
+                    <div>Precio</div>
+                    <div>${crop.sellPrices.normal}g</div>
+                    <div>${crop.sellPrices.silver}g</div>
+                    <div>${crop.sellPrices.gold}g</div>
+                    <div>${crop.sellPrices.iridium}g</div>
+                </div>
+                <div class="quality-price-row">
+                    <div>Ganancia</div>
+                    <div class="${getProfitClass(profits.normal)}">+${profits.normal}g</div>
+                    <div class="${getProfitClass(profits.silver)}">+${profits.silver}g</div>
+                    <div class="${getProfitClass(profits.gold)}">+${profits.gold}g</div>
+                    <div class="${getProfitClass(profits.iridium)}">+${profits.iridium}g</div>
+                </div>
+            </div>
+            
+            <div class="note">
+                <strong>Notas:</strong> ${crop.notes}
+            </div>
+        </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Agrega parámetro searchTerm a las otras funciones display
+function displayTrees(trees, searchTerm = '') {
+    // ... código existente, pero agrega resaltado como en displayCrops
+    let displayName = tree.name;
+    if (searchTerm) {
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        displayName = tree.name.replace(regex, '<span class="highlight">$1</span>');
+    }
+    // ... resto del código
+}
+
+// Similar para displayFish, displayAnimals, displayMushrooms
+
+// Modificar initializeEventListeners para incluir búsqueda
+function initializeEventListeners() {
+    // ... listeners existentes ...
+    
+    // Inicializar búsqueda en tiempo real
+    setupRealTimeSearch();
+    
+    // ... resto de listeners ...
+}
+
+// Inicializar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    initializeNavigation();
+    initializeEventListeners();
+    initializeCalculator();
+    setupRealTimeSearch(); // <-- Agregar esta línea
+    // ... resto de inicialización ...
+});
