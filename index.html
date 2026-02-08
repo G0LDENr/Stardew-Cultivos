@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stardew Valley Planner Completo</title>
+    <link rel="stylesheet" href="./css/cultivos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-seedling"></i>
+                <span>Stardew Planner</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#cultivos" class="nav-link active" data-section="cultivos"><i class="fas fa-carrot"></i> Cultivos</a></li>
+                <li><a href="#arboles" class="nav-link" data-section="arboles"><i class="fas fa-apple-alt"></i> Árboles</a></li>
+                <li><a href="#pesca" class="nav-link" data-section="pesca"><i class="fas fa-fish"></i> Pesca</a></li>
+                <li><a href="#animales" class="nav-link" data-section="animales"><i class="fas fa-egg"></i> Animales</a></li>
+                <li><a href="#hongos" class="nav-link" data-section="hongos"><i class="fas fa-mushroom"></i> Hongos</a></li>
+                <li><a href="#calculadora" class="nav-link" data-section="calculadora"><i class="fas fa-calculator"></i> Calculadora</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Sección Cultivos -->
+        <section id="cultivos" class="content-section active">
+            <div class="section-header">
+                <h1><i class="fas fa-carrot"></i> Cultivos</h1>
+                <p>Planifica tus cultivos según temporada, año y calidad</p>
+            </div>
+            
+            <div class="container">
+                <div class="filters">
+                    <h2>Filtros de Cultivos</h2>
+                    
+                    <div class="form-group">
+                        <label for="season">Estación:</label>
+                        <select id="season">
+                            <option value="all">Todas las estaciones</option>
+                            <option value="spring">Primavera</option>
+                            <option value="summer">Verano</option>
+                            <option value="fall">Otoño</option>
+                            <option value="winter">Invierno</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="year">Año de juego:</label>
+                        <select id="year">
+                            <option value="1">Año 1</option>
+                            <option value="2">Año 2+</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="growthTime">Tiempo de crecimiento:</label>
+                        <select id="growthTime">
+                            <option value="all">Cualquier tiempo</option>
+                            <option value="7">7 días o menos</option>
+                            <option value="14">14 días o menos</option>
+                            <option value="28">28 días (toda la estación)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cropType">Tipo de cultivo:</label>
+                        <select id="cropType">
+                            <option value="all">Todos los tipos</option>
+                            <option value="standard">Cultivos estándar</option>
+                            <option value="regrow">Cultivos que vuelven a crecer</option>
+                            <option value="multi">Multi-estación</option>
+                            <option value="special">Cultivos especiales</option>
+                        </select>
+                    </div>
+                    
+                    <button id="searchBtn" class="btn-primary"><i class="fas fa-search"></i> Buscar Cultivos</button>
+                    <button id="suggestBtn" class="btn-secondary"><i class="fas fa-lightbulb"></i> Sugerencias</button>
+                    
+                    <div class="note">
+                        <p><strong>Consejo:</strong> Los cultivos que re-crecen son más rentables a largo plazo.</p>
+                    </div>
+                </div>
+                
+                <div class="results">
+                    <h2>Resultados <span id="resultsCount"></span></h2>
+                    <div id="resultsContainer">
+                        <p>Selecciona tus filtros y haz clic en "Buscar Cultivos" para ver los resultados.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Árboles Frutales -->
+        <section id="arboles" class="content-section">
+            <div class="section-header">
+                <h1><i class="fas fa-apple-alt"></i> Árboles Frutales</h1>
+                <p>Información sobre árboles frutales y sus frutos</p>
+            </div>
+            
+            <div class="container">
+                <div class="filters">
+                    <h2>Filtros de Árboles</h2>
+                    
+                    <div class="form-group">
+                        <label for="treeSeason">Estación de fruto:</label>
+                        <select id="treeSeason">
+                            <option value="all">Todas las estaciones</option>
+                            <option value="spring">Primavera</option>
+                            <option value="summer">Verano</option>
+                            <option value="fall">Otoño</option>
+                            <option value="multiple">Multi-estación</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="treeType">Tipo de árbol:</label>
+                        <select id="treeType">
+                            <option value="all">Todos los tipos</option>
+                            <option value="common">Comunes</option>
+                            <option value="exotic">Exóticos</option>
+                        </select>
+                    </div>
+                    
+                    <button id="searchTreesBtn" class="btn-primary"><i class="fas fa-search"></i> Buscar Árboles</button>
+                    
+                    <div class="note">
+                        <p><strong>Nota:</strong> Los árboles frutales tardan 28 días en madurar y producen fruta cada día durante su estación.</p>
+                    </div>
+                </div>
+                
+                <div class="results">
+                    <h2>Árboles Frutales <span id="treesCount"></span></h2>
+                    <div id="treesContainer">
+                        <!-- Los árboles se cargarán aquí -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Pesca -->
+        <section id="pesca" class="content-section">
+            <div class="section-header">
+                <h1><i class="fas fa-fish"></i> Pesca</h1>
+                <p>Información sobre peces, ubicaciones y temporadas</p>
+            </div>
+            
+            <div class="container">
+                <div class="filters">
+                    <h2>Filtros de Pesca</h2>
+                    
+                    <div class="form-group">
+                        <label for="fishSeason">Estación:</label>
+                        <select id="fishSeason">
+                            <option value="all">Todas las estaciones</option>
+                            <option value="spring">Primavera</option>
+                            <option value="summer">Verano</option>
+                            <option value="fall">Otoño</option>
+                            <option value="winter">Invierno</option>
+                            <option value="all-year">Todo el año</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fishLocation">Ubicación:</label>
+                        <select id="fishLocation">
+                            <option value="all">Todas las ubicaciones</option>
+                            <option value="river">Río</option>
+                            <option value="lake">Lago</option>
+                            <option value="ocean">Océano</option>
+                            <option value="forest">Bosque</option>
+                            <option value="mine">Mina</option>
+                            <option value="secret">Secretas</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fishWeather">Clima:</label>
+                        <select id="fishWeather">
+                            <option value="all">Cualquier clima</option>
+                            <option value="sunny">Soleado</option>
+                            <option value="rainy">Lluvioso</option>
+                            <option value="both">Ambos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fishTime">Horario:</label>
+                        <select id="fishTime">
+                            <option value="all">Cualquier hora</option>
+                            <option value="morning">Mañana (6AM-12PM)</option>
+                            <option value="afternoon">Tarde (12PM-6PM)</option>
+                            <option value="evening">Noche (6PM-2AM)</option>
+                        </select>
+                    </div>
+                    
+                    <button id="searchFishBtn" class="btn-primary"><i class="fas fa-search"></i> Buscar Peces</button>
+                    
+                    <div class="note">
+                        <p><strong>Consejo:</strong> Algunos peces solo aparecen en condiciones específicas de clima, hora y temporada.</p>
+                    </div>
+                </div>
+                
+                <div class="results">
+                    <h2>Peces <span id="fishCount"></span></h2>
+                    <div id="fishContainer">
+                        <!-- Los peces se cargarán aquí -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Productos Animales -->
+        <section id="animales" class="content-section">
+            <div class="section-header">
+                <h1><i class="fas fa-egg"></i> Productos Animales</h1>
+                <p>Información sobre animales y sus productos</p>
+            </div>
+            
+            <div class="container">
+                <div class="filters">
+                    <h2>Filtros de Animales</h2>
+                    
+                    <div class="form-group">
+                        <label for="animalType">Tipo de animal:</label>
+                        <select id="animalType">
+                            <option value="all">Todos los animales</option>
+                            <option value="coop">Gallinero</option>
+                            <option value="barn">Establo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productType">Tipo de producto:</label>
+                        <select id="productType">
+                            <option value="all">Todos los productos</option>
+                            <option value="egg">Huevos</option>
+                            <option value="milk">Leche</option>
+                            <option value="wool">Lana</option>
+                            <option value="other">Otros</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productQuality">Calidad de producto:</label>
+                        <select id="productQuality">
+                            <option value="all">Todas las calidades</option>
+                            <option value="normal">Normal</option>
+                            <option value="large">Grande/Plata</option>
+                            <option value="gold">Oro</option>
+                            <option value="iridium">Iridio</option>
+                        </select>
+                    </div>
+                    
+                    <button id="searchAnimalsBtn" class="btn-primary"><i class="fas fa-search"></i> Buscar Productos</button>
+                    
+                    <div class="note">
+                        <p><strong>Nota:</strong> La calidad del producto depende de la amistad con el animal y de si tiene o no la habilidad "Pastor" o "Granjero".</p>
+                    </div>
+                </div>
+                
+                <div class="results">
+                    <h2>Productos Animales <span id="animalsCount"></span></h2>
+                    <div id="animalsContainer">
+                        <!-- Los productos animales se cargarán aquí -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Hongos -->
+        <section id="hongos" class="content-section">
+            <div class="section-header">
+                <h1><i class="fas fa-mushroom"></i> Hongos</h1>
+                <p>Información sobre hongos y dónde encontrarlos</p>
+            </div>
+            
+            <div class="container">
+                <div class="filters">
+                    <h2>Filtros de Hongos</h2>
+                    
+                    <div class="form-group">
+                        <label for="mushroomSeason">Estación:</label>
+                        <select id="mushroomSeason">
+                            <option value="all">Todas las estaciones</option>
+                            <option value="spring">Primavera</option>
+                            <option value="summer">Verano</option>
+                            <option value="fall">Otoño</option>
+                            <option value="winter">Invierno</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mushroomLocation">Ubicación:</label>
+                        <select id="mushroomLocation">
+                            <option value="all">Todas las ubicaciones</option>
+                            <option value="farm">Granja</option>
+                            <option value="forest">Bosque</option>
+                            <option value="mine">Mina</option>
+                            <option value="secret">Bosque secreto</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mushroomType">Tipo:</label>
+                        <select id="mushroomType">
+                            <option value="all">Todos los tipos</option>
+                            <option value="common">Comunes</option>
+                            <option value="rare">Raros</option>
+                            <option value="special">Especiales</option>
+                        </select>
+                    </div>
+                    
+                    <button id="searchMushroomsBtn" class="btn-primary"><i class="fas fa-search"></i> Buscar Hongos</button>
+                    
+                    <div class="note">
+                        <p><strong>Consejo:</strong> La Cueva de los Hongos en la granja produce hongos diariamente según la elección que hagas.</p>
+                    </div>
+                </div>
+                
+                <div class="results">
+                    <h2>Hongos <span id="mushroomsCount"></span></h2>
+                    <div id="mushroomsContainer">
+                        <!-- Los hongos se cargarán aquí -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Calculadora Avanzada -->
+        <section id="calculadora" class="content-section">
+            <div class="section-header">
+                <h1><i class="fas fa-calculator"></i> Calculadora Avanzada</h1>
+                <p>Calcula el valor total de tus cosechas con diferentes calidades</p>
+            </div>
+            
+            <div class="calculator-container">
+                <div class="calculator-filters">
+                    <h2><i class="fas fa-cogs"></i> Configuración</h2>
+                    
+                    <div class="form-group">
+                        <label for="calcCategory">Categoría:</label>
+                        <select id="calcCategory">
+                            <option value="crops">Cultivos</option>
+                            <option value="trees">Árboles frutales</option>
+                            <option value="fish">Peces</option>
+                            <option value="animals">Productos animales</option>
+                            <option value="mushrooms">Hongos</option>
+                        </select>
+                    </div>
+                    
+                    <div id="itemSelection" class="form-group">
+                        <label for="calcItem">Ítem:</label>
+                        <select id="calcItem">
+                            <option value="">Selecciona un ítem</option>
+                        </select>
+                    </div>
+                    
+                    <div class="quality-inputs">
+                        <h3><i class="fas fa-star"></i> Cantidad por Calidad</h3>
+                        
+                        <div class="quality-input-group">
+                            <div class="quality-input">
+                                <label for="calcNormal" class="quality-normal"><i class="fas fa-circle"></i> Normal:</label>
+                                <input type="number" id="calcNormal" value="0" min="0" max="999">
+                            </div>
+                            <div class="quality-input">
+                                <label for="calcSilver" class="quality-silver"><i class="fas fa-star"></i> Plata:</label>
+                                <input type="number" id="calcSilver" value="0" min="0" max="999">
+                            </div>
+                            <div class="quality-input">
+                                <label for="calcGold" class="quality-gold"><i class="fas fa-star"></i> Oro:</label>
+                                <input type="number" id="calcGold" value="0" min="0" max="999">
+                            </div>
+                            <div class="quality-input">
+                                <label for="calcIridium" class="quality-iridium"><i class="fas fa-gem"></i> Iridio:</label>
+                                <input type="number" id="calcIridium" value="0" min="0" max="999">
+                            </div>
+                        </div>
+                        
+                        <div class="total-quantity">
+                            <p><strong>Total unidades:</strong> <span id="totalUnits">0</span></p>
+                        </div>
+                    </div>
+                    
+                    <button id="calculateTotalBtn" class="btn-primary"><i class="fas fa-calculator"></i> Calcular Total</button>
+                    <button id="clearCalcBtn" class="btn-secondary"><i class="fas fa-trash"></i> Limpiar</button>
+                </div>
+                
+                <div class="calculator-results">
+                    <h2><i class="fas fa-chart-bar"></i> Resultados</h2>
+                    
+                    <div id="calculatorResults" class="calculator-results-container">
+                        <div class="results-placeholder">
+                            <i class="fas fa-calculator fa-3x"></i>
+                            <p>Selecciona un ítem y especifica las cantidades por calidad para calcular el valor total.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="quick-calculations">
+                        <h3><i class="fas fa-bolt"></i> Cálculos Rápidos</h3>
+                        <div class="quick-buttons">
+                            <button class="quick-btn" data-multiplier="10">x10</button>
+                            <button class="quick-btn" data-multiplier="25">x25</button>
+                            <button class="quick-btn" data-multiplier="50">x50</button>
+                            <button class="quick-btn" data-multiplier="100">x100</button>
+                            <button class="quick-btn" data-multiplier="999">Máx</button>
+                        </div>
+                        <p class="note">Haz clic en un botón para multiplicar todas las cantidades actuales.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="saved-calculations">
+                <h2><i class="fas fa-save"></i> Cálculos Guardados</h2>
+                <div id="savedCalculations">
+                    <p class="empty-message">No hay cálculos guardados aún.</p>
+                </div>
+                <button id="saveCalculationBtn" class="btn-secondary"><i class="fas fa-save"></i> Guardar Cálculo Actual</button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>Stardew Valley Planner &copy; 2023 | Creado para fans de Stardew Valley</p>
+        <p class="footer-note">Este es un proyecto de fans no oficial. Stardew Valley es propiedad de ConcernedApe.</p>
+    </footer>
+
+    <script src="./data/cultivos.js"></script>
+    <script src="./js/cultivos.js"></script>
+</body>
+</html>
