@@ -371,12 +371,12 @@
         <section id="calculadora" class="content-section">
             <div class="section-header">
                 <h1><i class="fas fa-calculator"></i> Calculadora Avanzada</h1>
-                <p>Calcula el valor total de tus cosechas con diferentes calidades</p>
+                <p>Calcula el valor total de múltiples productos con diferentes calidades</p>
             </div>
             
             <div class="calculator-container">
                 <div class="calculator-filters">
-                    <h2><i class="fas fa-cogs"></i> Configuración</h2>
+                    <h2><i class="fas fa-plus-circle"></i> Agregar Producto</h2>
                     
                     <div class="form-group">
                         <label for="calcCategory">Categoría:</label>
@@ -397,7 +397,7 @@
                     
                     <div id="itemSelection" class="form-group">
                         <label for="calcItem">Ítem:</label>
-                        <select id="calcItem" size="8">
+                        <select id="calcItem" size="6">
                             <option value="">Selecciona un ítem</option>
                         </select>
                     </div>
@@ -408,19 +408,19 @@
                         <div class="quality-input-group">
                             <div class="quality-input">
                                 <label for="calcNormal" class="quality-normal"><i class="fas fa-circle"></i> Normal:</label>
-                                <input type="number" id="calcNormal" value="0" min="0" max="999">
+                                <input type="number" id="calcNormal" value="0" min="0" max="9999">
                             </div>
                             <div class="quality-input">
                                 <label for="calcSilver" class="quality-silver"><i class="fas fa-star"></i> Plata:</label>
-                                <input type="number" id="calcSilver" value="0" min="0" max="999">
+                                <input type="number" id="calcSilver" value="0" min="0" max="9999">
                             </div>
                             <div class="quality-input">
                                 <label for="calcGold" class="quality-gold"><i class="fas fa-star"></i> Oro:</label>
-                                <input type="number" id="calcGold" value="0" min="0" max="999">
+                                <input type="number" id="calcGold" value="0" min="0" max="9999">
                             </div>
                             <div class="quality-input">
                                 <label for="calcIridium" class="quality-iridium"><i class="fas fa-gem"></i> Iridio:</label>
-                                <input type="number" id="calcIridium" value="0" min="0" max="999">
+                                <input type="number" id="calcIridium" value="0" min="0" max="9999">
                             </div>
                         </div>
                         
@@ -429,17 +429,21 @@
                         </div>
                     </div>
                     
-                    <button id="calculateTotalBtn" class="btn-primary"><i class="fas fa-calculator"></i> Calcular Total</button>
-                    <button id="clearCalcBtn" class="btn-secondary"><i class="fas fa-trash"></i> Limpiar</button>
+                    <div class="calculator-actions">
+                        <button id="addToCalculationBtn" class="btn-primary"><i class="fas fa-plus"></i> Agregar a Lista</button>
+                        <button id="calculateTotalBtn" class="btn-success"><i class="fas fa-calculator"></i> Calcular Total</button>
+                        <button id="clearCalcBtn" class="btn-secondary"><i class="fas fa-trash"></i> Limpiar Todo</button>
+                    </div>
                 </div>
                 
                 <div class="calculator-results">
-                    <h2><i class="fas fa-chart-bar"></i> Resultados</h2>
+                    <h2><i class="fas fa-list"></i> Productos Agregados <span id="itemsCount">(0)</span></h2>
                     
-                    <div id="calculatorResults" class="calculator-results-container">
-                        <div class="results-placeholder">
-                            <i class="fas fa-calculator fa-3x"></i>
-                            <p>Selecciona un ítem y especifica las cantidades por calidad para calcular el valor total.</p>
+                    <div id="itemsList" class="items-list">
+                        <div class="empty-list">
+                            <i class="fas fa-clipboard-list fa-3x"></i>
+                            <p>No hay productos en la lista.</p>
+                            <p>Agrega productos usando el formulario de la izquierda.</p>
                         </div>
                     </div>
                     
@@ -450,19 +454,48 @@
                             <button class="quick-btn" data-multiplier="25">x25</button>
                             <button class="quick-btn" data-multiplier="50">x50</button>
                             <button class="quick-btn" data-multiplier="100">x100</button>
-                            <button class="quick-btn" data-multiplier="999">Máx</button>
+                            <button class="quick-btn" data-multiplier="9999">Máx</button>
                         </div>
                         <p class="note">Haz clic en un botón para multiplicar todas las cantidades actuales.</p>
+                    </div>
+                    
+                    <div id="calculatorResults" class="calculator-results-container">
+                        <div class="results-placeholder">
+                            <i class="fas fa-calculator fa-3x"></i>
+                            <p>Agrega productos y haz clic en "Calcular Total" para ver los resultados.</p>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <div class="saved-calculations">
                 <h2><i class="fas fa-save"></i> Cálculos Guardados</h2>
+                
+                <div class="export-import-buttons">
+                    <button id="exportAllBtn" class="btn-primary">
+                        <i class="fas fa-download"></i> Exportar Todo
+                    </button>
+                    <button id="exportCurrentBtn" class="btn-secondary">
+                        <i class="fas fa-file-export"></i> Exportar Actual
+                    </button>
+                    <button id="importBtn" class="btn-secondary">
+                        <i class="fas fa-upload"></i> Importar
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+                
                 <div id="savedCalculations">
                     <p class="empty-message">No hay cálculos guardados aún.</p>
                 </div>
-                <button id="saveCalculationBtn" class="btn-secondary"><i class="fas fa-save"></i> Guardar Cálculo Actual</button>
+                
+                <div class="saved-actions">
+                    <button id="saveCalculationBtn" class="btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cálculo Actual
+                    </button>
+                    <button id="clearSavedBtn" class="btn-secondary">
+                        <i class="fas fa-trash-alt"></i> Limpiar Guardados
+                    </button>
+                </div>
             </div>
         </section>
     </main>

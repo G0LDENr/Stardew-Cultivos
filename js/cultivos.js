@@ -1,7 +1,12 @@
+// =============================================
+// STARDEW VALLEY PLANNER - JAVASCRIPT COMPLETO
+// =============================================
+
 // Variables globales
 let currentSection = "cultivos";
 let savedCalculations = JSON.parse(localStorage.getItem("stardewCalculations")) || [];
 let searchTimeout = null;
+let calculationItems = []; // Array para almacenar múltiples productos
 
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', function() {
@@ -35,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     updateTotalQuantity();
     loadSavedCalculations();
+    updateItemsCount();
     
     console.log("✅ Aplicación inicializada correctamente!");
 });
@@ -99,15 +105,34 @@ function initializeEventListeners() {
     const searchMushroomsBtn = document.getElementById('searchMushroomsBtn');
     if (searchMushroomsBtn) searchMushroomsBtn.addEventListener('click', searchMushrooms);
     
-    // Calculadora
+    // Calculadora - Botones nuevos
+    const addToCalculationBtn = document.getElementById('addToCalculationBtn');
+    if (addToCalculationBtn) addToCalculationBtn.addEventListener('click', addToCalculation);
+    
     const calculateTotalBtn = document.getElementById('calculateTotalBtn');
-    if (calculateTotalBtn) calculateTotalBtn.addEventListener('click', calculateTotal);
+    if (calculateTotalBtn) calculateTotalBtn.addEventListener('click', calculateTotalMultiple);
     
     const clearCalcBtn = document.getElementById('clearCalcBtn');
     if (clearCalcBtn) clearCalcBtn.addEventListener('click', clearCalculator);
     
     const saveCalculationBtn = document.getElementById('saveCalculationBtn');
-    if (saveCalculationBtn) saveCalculationBtn.addEventListener('click', saveCalculation);
+    if (saveCalculationBtn) saveCalculationBtn.addEventListener('click', saveCalculationMultiple);
+    
+    const clearSavedBtn = document.getElementById('clearSavedBtn');
+    if (clearSavedBtn) clearSavedBtn.addEventListener('click', clearSavedCalculations);
+    
+    // Botones de exportación/importación
+    const exportAllBtn = document.getElementById('exportAllBtn');
+    if (exportAllBtn) exportAllBtn.addEventListener('click', exportAllCalculations);
+    
+    const exportCurrentBtn = document.getElementById('exportCurrentBtn');
+    if (exportCurrentBtn) exportCurrentBtn.addEventListener('click', exportCurrentCalculation);
+    
+    const importBtn = document.getElementById('importBtn');
+    if (importBtn) importBtn.addEventListener('click', () => document.getElementById('importFile').click());
+    
+    const importFile = document.getElementById('importFile');
+    if (importFile) importFile.addEventListener('change', importCalculations);
     
     // Cambio de categoría en calculadora
     const calcCategory = document.getElementById('calcCategory');
@@ -297,14 +322,14 @@ function applyQuickMultiplier(multiplier) {
         const currentValue = parseInt(input.value) || 0;
         let newValue = currentValue * multiplier;
         
-        // Si es "Máx", establecer a 999
-        if (multiplier === 999) {
-            newValue = 999;
+        // Si es "Máx", establecer a 9999
+        if (multiplier === 9999) {
+            newValue = 9999;
         }
         
-        // Limitar a 999
-        if (newValue > 999) {
-            newValue = 999;
+        // Limitar a 9999
+        if (newValue > 9999) {
+            newValue = 9999;
         }
         
         input.value = newValue;
@@ -313,13 +338,13 @@ function applyQuickMultiplier(multiplier) {
     updateTotalQuantity();
 }
 
-// Calcular total de venta
-function calculateTotal() {
+// Agregar producto a la lista de cálculo
+function addToCalculation() {
     const category = document.getElementById('calcCategory').value;
     const itemId = document.getElementById('calcItem').value;
     
     if (!itemId) {
-        showCalculatorResult("Por favor, selecciona un ítem para calcular.", "error");
+        alert("Por favor, selecciona un ítem para agregar.");
         return;
     }
     
@@ -334,7 +359,7 @@ function calculateTotal() {
     // Verificar que haya al menos una cantidad
     const totalItems = quantities.normal + quantities.silver + quantities.gold + quantities.iridium;
     if (totalItems === 0) {
-        showCalculatorResult("Por favor, ingresa al menos una cantidad para calcular.", "error");
+        alert("Por favor, ingresa al menos una cantidad para agregar.");
         return;
     }
     
@@ -363,35 +388,184 @@ function calculateTotal() {
     item = database.find(i => i.id === itemId);
     
     if (!item) {
-        showCalculatorResult("Ítem no encontrado.", "error");
+        alert("Ítem no encontrado.");
         return;
     }
     
-    // Calcular valores
+    // Calcular valor total de este producto
     const prices = item.sellPrices || item.qualityPrices || item.fruitQualityPrices || {};
+    const itemValue = 
+        (quantities.normal * (prices.normal || 0)) +
+        (quantities.silver * (prices.silver || 0)) +
+        (quantities.gold * (prices.gold || 0)) +
+        (quantities.iridium * (prices.iridium || 0));
     
-    const values = {
-        normal: quantities.normal * (prices.normal || 0),
-        silver: quantities.silver * (prices.silver || 0),
-        gold: quantities.gold * (prices.gold || 0),
-        iridium: quantities.iridium * (prices.iridium || 0)
+    // Agregar a la lista
+    const calculationItem = {
+        id: Date.now(), // ID único
+        itemId: item.id,
+        itemName: item.name,
+        category: category,
+        quantities: quantities,
+        itemValue: itemValue,
+        prices: prices
     };
     
-    const totalValue = values.normal + values.silver + values.gold + values.iridium;
+    calculationItems.push(calculationItem);
+    updateItemsList();
+    updateItemsCount();
+    
+    // Limpiar el formulario para el siguiente producto
+    document.getElementById('calcNormal').value = "0";
+    document.getElementById('calcSilver').value = "0";
+    document.getElementById('calcGold').value = "0";
+    document.getElementById('calcIridium').value = "0";
+    updateTotalQuantity();
+    
+    // Mensaje de confirmación
+    showNotification(`✅ ${item.name} agregado a la lista (${totalItems} unidades)`);
+}
+
+// Actualizar lista de productos
+function updateItemsList() {
+    const itemsList = document.getElementById('itemsList');
+    if (!itemsList) return;
+    
+    if (calculationItems.length === 0) {
+        itemsList.innerHTML = `
+            <div class="empty-list">
+                <i class="fas fa-clipboard-list fa-3x"></i>
+                <p>No hay productos en la lista.</p>
+                <p>Agrega productos usando el formulario de la izquierda.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    
+    calculationItems.forEach((item, index) => {
+        const totalQuantity = 
+            item.quantities.normal + 
+            item.quantities.silver + 
+            item.quantities.gold + 
+            item.quantities.iridium;
+        
+        html += `
+        <div class="calculated-item" data-index="${index}">
+            <div class="calculated-item-info">
+                <div class="calculated-item-name">${item.itemName}</div>
+                <div class="calculated-item-quantities">
+                    ${item.quantities.normal > 0 ? `<span class="quality-normal"><i class="fas fa-circle"></i> ${item.quantities.normal}</span>` : ''}
+                    ${item.quantities.silver > 0 ? `<span class="quality-silver"><i class="fas fa-star"></i> ${item.quantities.silver}</span>` : ''}
+                    ${item.quantities.gold > 0 ? `<span class="quality-gold"><i class="fas fa-star"></i> ${item.quantities.gold}</span>` : ''}
+                    ${item.quantities.iridium > 0 ? `<span class="quality-iridium"><i class="fas fa-gem"></i> ${item.quantities.iridium}</span>` : ''}
+                </div>
+            </div>
+            <div class="calculated-item-value">${item.itemValue}g</div>
+            <div class="calculated-item-actions">
+                <button onclick="editCalculationItem(${index})" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="removeCalculationItem(${index})" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        `;
+    });
+    
+    itemsList.innerHTML = html;
+}
+
+// Actualizar contador de ítems
+function updateItemsCount() {
+    const itemsCount = document.getElementById('itemsCount');
+    if (itemsCount) {
+        itemsCount.textContent = `(${calculationItems.length})`;
+    }
+}
+
+// Editar ítem de cálculo
+window.editCalculationItem = function(index) {
+    if (index >= 0 && index < calculationItems.length) {
+        const item = calculationItems[index];
+        
+        // Establecer valores en el formulario
+        document.getElementById('calcCategory').value = item.category;
+        updateCalculatorItems();
+        
+        setTimeout(() => {
+            document.getElementById('calcItem').value = item.itemId;
+            document.getElementById('calcNormal').value = item.quantities.normal;
+            document.getElementById('calcSilver').value = item.quantities.silver;
+            document.getElementById('calcGold').value = item.quantities.gold;
+            document.getElementById('calcIridium').value = item.quantities.iridium;
+            
+            updateTotalQuantity();
+            
+            // Eliminar el ítem de la lista
+            calculationItems.splice(index, 1);
+            updateItemsList();
+            updateItemsCount();
+            
+            showNotification(`✏️ ${item.itemName} cargado para edición`);
+        }, 100);
+    }
+};
+
+// Eliminar ítem de cálculo
+window.removeCalculationItem = function(index) {
+    if (index >= 0 && index < calculationItems.length) {
+        const itemName = calculationItems[index].itemName;
+        calculationItems.splice(index, 1);
+        updateItemsList();
+        updateItemsCount();
+        showNotification(`🗑️ ${itemName} eliminado de la lista`);
+    }
+};
+
+// Calcular total de múltiples productos
+function calculateTotalMultiple() {
+    if (calculationItems.length === 0) {
+        showCalculatorResult("Agrega al menos un producto a la lista antes de calcular.", "error");
+        return;
+    }
+    
+    let totalValue = 0;
+    let totalItems = 0;
+    let totalNormal = 0;
+    let totalSilver = 0;
+    let totalGold = 0;
+    let totalIridium = 0;
+    
+    // Calcular totales
+    calculationItems.forEach(item => {
+        totalValue += item.itemValue;
+        totalItems += item.quantities.normal + item.quantities.silver + item.quantities.gold + item.quantities.iridium;
+        totalNormal += item.quantities.normal;
+        totalSilver += item.quantities.silver;
+        totalGold += item.quantities.gold;
+        totalIridium += item.quantities.iridium;
+    });
+    
+    // Calcular promedio por unidad
+    const averagePerUnit = totalItems > 0 ? (totalValue / totalItems).toFixed(2) : 0;
     
     // Mostrar resultados
     showCalculatorResult({
-        itemName: item.name,
-        category: category,
-        itemId: itemId,
-        quantities: quantities,
-        values: values,
         totalValue: totalValue,
-        prices: prices
+        totalItems: totalItems,
+        totalNormal: totalNormal,
+        totalSilver: totalSilver,
+        totalGold: totalGold,
+        totalIridium: totalIridium,
+        averagePerUnit: averagePerUnit,
+        itemsCount: calculationItems.length
     });
 }
 
-// Mostrar resultados de la calculadora
+// Mostrar resultados de la calculadora (múltiples productos)
 function showCalculatorResult(result, type = "success") {
     const resultsContainer = document.getElementById('calculatorResults');
     
@@ -405,47 +579,75 @@ function showCalculatorResult(result, type = "success") {
         return;
     }
     
-    const { itemName, quantities, values, totalValue, prices } = result;
+    const { totalValue, totalItems, totalNormal, totalSilver, totalGold, totalIridium, averagePerUnit, itemsCount } = result;
     
     // Determinar el color del total basado en el valor
     let totalColorClass = "profit-medium";
     if (totalValue >= 10000) totalColorClass = "profit-high";
     if (totalValue < 1000) totalColorClass = "profit-low";
     
+    // Detalles por calidad
+    let qualityDetailsHTML = '';
+    if (totalNormal > 0 || totalSilver > 0 || totalGold > 0 || totalIridium > 0) {
+        qualityDetailsHTML = `
+        <div class="result-details">
+            ${totalNormal > 0 ? `
+            <div class="result-detail">
+                <h4 class="quality-normal"><i class="fas fa-circle"></i> Normal</h4>
+                <p>Cantidad: ${totalNormal}</p>
+                <p>Porcentaje: ${((totalNormal / totalItems) * 100).toFixed(1)}%</p>
+            </div>
+            ` : ''}
+            
+            ${totalSilver > 0 ? `
+            <div class="result-detail">
+                <h4 class="quality-silver"><i class="fas fa-star"></i> Plata</h4>
+                <p>Cantidad: ${totalSilver}</p>
+                <p>Porcentaje: ${((totalSilver / totalItems) * 100).toFixed(1)}%</p>
+            </div>
+            ` : ''}
+            
+            ${totalGold > 0 ? `
+            <div class="result-detail">
+                <h4 class="quality-gold"><i class="fas fa-star"></i> Oro</h4>
+                <p>Cantidad: ${totalGold}</p>
+                <p>Porcentaje: ${((totalGold / totalItems) * 100).toFixed(1)}%</p>
+            </div>
+            ` : ''}
+            
+            ${totalIridium > 0 ? `
+            <div class="result-detail">
+                <h4 class="quality-iridium"><i class="fas fa-gem"></i> Iridio</h4>
+                <p>Cantidad: ${totalIridium}</p>
+                <p>Porcentaje: ${((totalIridium / totalItems) * 100).toFixed(1)}%</p>
+            </div>
+            ` : ''}
+        </div>
+        `;
+    }
+    
     resultsContainer.innerHTML = `
         <div class="calculation-result">
             <h3><i class="fas fa-chart-line"></i> Resultado del Cálculo</h3>
-            <p><strong>Ítem:</strong> ${itemName}</p>
             
-            <div class="result-details">
-                <div class="result-detail">
-                    <h4 class="quality-normal"><i class="fas fa-circle"></i> Normal</h4>
-                    <p>Cantidad: ${quantities.normal}</p>
-                    <p>Precio: ${prices.normal}g</p>
-                    <p>Subtotal: <strong>${values.normal}g</strong></p>
+            <div class="result-summary">
+                <div class="result-summary-item">
+                    <h4>Productos</h4>
+                    <p class="result-summary-value">${itemsCount}</p>
                 </div>
                 
-                <div class="result-detail">
-                    <h4 class="quality-silver"><i class="fas fa-star"></i> Plata</h4>
-                    <p>Cantidad: ${quantities.silver}</p>
-                    <p>Precio: ${prices.silver}g</p>
-                    <p>Subtotal: <strong>${values.silver}g</strong></p>
+                <div class="result-summary-item">
+                    <h4>Unidades</h4>
+                    <p class="result-summary-value">${totalItems}</p>
                 </div>
                 
-                <div class="result-detail">
-                    <h4 class="quality-gold"><i class="fas fa-star"></i> Oro</h4>
-                    <p>Cantidad: ${quantities.gold}</p>
-                    <p>Precio: ${prices.gold}g</p>
-                    <p>Subtotal: <strong>${values.gold}g</strong></p>
-                </div>
-                
-                <div class="result-detail">
-                    <h4 class="quality-iridium"><i class="fas fa-gem"></i> Iridio</h4>
-                    <p>Cantidad: ${quantities.iridium}</p>
-                    <p>Precio: ${prices.iridium}g</p>
-                    <p>Subtotal: <strong>${values.iridium}g</strong></p>
+                <div class="result-summary-item">
+                    <h4>Promedio/Unidad</h4>
+                    <p class="result-summary-value">${averagePerUnit}g</p>
                 </div>
             </div>
+            
+            ${qualityDetailsHTML}
             
             <div class="result-total ${totalColorClass}">
                 <p>TOTAL DE VENTA</p>
@@ -455,11 +657,24 @@ function showCalculatorResult(result, type = "success") {
     `;
     
     // Guardar el cálculo actual para poder guardarlo después
-    window.currentCalculation = result;
+    window.currentCalculation = {
+        items: calculationItems,
+        totalValue: totalValue,
+        totalItems: totalItems,
+        date: new Date().toLocaleString()
+    };
 }
 
 // Limpiar calculadora
 function clearCalculator() {
+    if (calculationItems.length > 0 && !confirm("¿Estás seguro de que quieres limpiar todos los productos de la lista?")) {
+        return;
+    }
+    
+    calculationItems = [];
+    updateItemsList();
+    updateItemsCount();
+    
     const itemSelect = document.getElementById('calcItem');
     if (itemSelect) itemSelect.value = "";
     
@@ -473,33 +688,274 @@ function clearCalculator() {
         resultsContainer.innerHTML = `
             <div class="results-placeholder">
                 <i class="fas fa-calculator fa-3x"></i>
-                <p>Selecciona un ítem y especifica las cantidades por calidad para calcular el valor total.</p>
+                <p>Agrega productos y haz clic en "Calcular Total" para ver los resultados.</p>
             </div>
         `;
     }
     
     updateTotalQuantity();
     window.currentCalculation = null;
+    
+    showNotification("🗑️ Lista de productos limpiada");
 }
 
-// Guardar cálculo
-function saveCalculation() {
-    if (!window.currentCalculation) {
-        alert("No hay ningún cálculo para guardar. Realiza un cálculo primero.");
+// Guardar cálculo de múltiples productos
+function saveCalculationMultiple() {
+    if (!window.currentCalculation || calculationItems.length === 0) {
+        alert("No hay ningún cálculo para guardar. Agrega productos y calcula el total primero.");
         return;
     }
     
     const calculation = {
         ...window.currentCalculation,
         id: Date.now(),
-        date: new Date().toLocaleString()
+        date: new Date().toLocaleString(),
+        items: JSON.parse(JSON.stringify(calculationItems)) // Copia profunda
     };
     
     savedCalculations.push(calculation);
     localStorage.setItem("stardewCalculations", JSON.stringify(savedCalculations));
     loadSavedCalculations();
     
-    alert("✅ Cálculo guardado correctamente.");
+    showNotification("✅ Cálculo guardado correctamente");
+}
+
+// =============================================
+// FUNCIONALIDAD DE EXPORTACIÓN/IMPORTACIÓN
+// =============================================
+
+// Exportar todos los cálculos
+function exportAllCalculations() {
+    if (savedCalculations.length === 0) {
+        showNotification("No hay cálculos para exportar.", "error");
+        return;
+    }
+    
+    const exportData = {
+        app: "Stardew Valley Planner",
+        version: "1.0",
+        exportDate: new Date().toISOString(),
+        totalCalculations: savedCalculations.length,
+        calculations: savedCalculations
+    };
+    
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `stardew_calculations_${getFormattedDate()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showNotification(`✅ Exportados ${savedCalculations.length} cálculos`);
+}
+
+// Exportar cálculo actual
+function exportCurrentCalculation() {
+    if (!window.currentCalculation || calculationItems.length === 0) {
+        showNotification("No hay cálculo actual para exportar.", "error");
+        return;
+    }
+    
+    const exportData = {
+        app: "Stardew Valley Planner",
+        version: "1.0",
+        exportDate: new Date().toISOString(),
+        calculation: window.currentCalculation,
+        items: calculationItems,
+        summary: {
+            totalValue: window.currentCalculation.totalValue,
+            totalItems: window.currentCalculation.totalItems,
+            itemsCount: calculationItems.length
+        }
+    };
+    
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `stardew_calculation_${getFormattedDate()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showNotification("✅ Cálculo actual exportado");
+}
+
+// Importar cálculos desde archivo
+function importCalculations(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            
+            // Validar el formato del archivo
+            if (!importedData.app || !importedData.calculations) {
+                showNotification("Formato de archivo inválido.", "error");
+                return;
+            }
+            
+            // Mostrar modal de confirmación
+            showImportModal(importedData);
+            
+        } catch (error) {
+            console.error("Error al importar:", error);
+            showNotification("Error al leer el archivo. Asegúrate de que sea un archivo JSON válido.", "error");
+        }
+    };
+    
+    reader.onerror = function() {
+        showNotification("Error al leer el archivo.", "error");
+    };
+    
+    reader.readAsText(file);
+    
+    // Limpiar el input
+    event.target.value = '';
+}
+
+// Mostrar modal de importación
+function showImportModal(importedData) {
+    // Crear modal
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'importModal';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-import"></i> Importar Cálculos</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Se encontraron <strong>${importedData.calculations.length}</strong> cálculos para importar.</p>
+                <p><strong>App:</strong> ${importedData.app || 'Desconocida'}</p>
+                <p><strong>Fecha de exportación:</strong> ${new Date(importedData.exportDate).toLocaleString() || 'Desconocida'}</p>
+                
+                <div class="import-options">
+                    <div class="import-option">
+                        <input type="radio" id="importReplace" name="importOption" value="replace" checked>
+                        <div>
+                            <label for="importReplace">Reemplazar todo</label>
+                            <div class="import-option-desc">Elimina los cálculos actuales y reemplaza con los importados.</div>
+                        </div>
+                    </div>
+                    <div class="import-option">
+                        <input type="radio" id="importMerge" name="importOption" value="merge">
+                        <div>
+                            <label for="importMerge">Combinar</label>
+                            <div class="import-option-desc">Agrega los cálculos importados a los existentes.</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="note">
+                    <strong>Nota:</strong> Los cálculos duplicados (con el mismo ID) no se importarán.
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelImportBtn" class="btn-secondary">Cancelar</button>
+                <button id="confirmImportBtn" class="btn-primary">Importar</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Mostrar modal
+    setTimeout(() => modal.style.display = 'block', 10);
+    
+    // Event listeners para el modal
+    modal.querySelector('.close-modal').addEventListener('click', () => closeModal(modal));
+    modal.querySelector('#cancelImportBtn').addEventListener('click', () => closeModal(modal));
+    modal.querySelector('#confirmImportBtn').addEventListener('click', () => {
+        const importOption = modal.querySelector('input[name="importOption"]:checked').value;
+        processImport(importedData, importOption);
+        closeModal(modal);
+    });
+    
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal(modal);
+    });
+}
+
+// Procesar la importación
+function processImport(importedData, importOption) {
+    let importedCalculations = importedData.calculations;
+    let importedCount = importedCalculations.length;
+    
+    if (importOption === 'replace') {
+        // Reemplazar todo
+        savedCalculations = importedCalculations;
+        localStorage.setItem("stardewCalculations", JSON.stringify(savedCalculations));
+        showNotification(`✅ ${importedCount} cálculos importados (reemplazo completo)`);
+    } else {
+        // Combinar (evitar duplicados)
+        const existingIds = new Set(savedCalculations.map(calc => calc.id));
+        const newCalculations = importedCalculations.filter(calc => !existingIds.has(calc.id));
+        
+        if (newCalculations.length === 0) {
+            showNotification("No se importaron cálculos nuevos (todos ya existen).", "warning");
+            return;
+        }
+        
+        savedCalculations.push(...newCalculations);
+        localStorage.setItem("stardewCalculations", JSON.stringify(savedCalculations));
+        
+        const skipped = importedCount - newCalculations.length;
+        let message = `✅ ${newCalculations.length} cálculos importados`;
+        if (skipped > 0) {
+            message += ` (${skipped} duplicados omitidos)`;
+        }
+        
+        showNotification(message);
+    }
+    
+    // Actualizar la lista
+    loadSavedCalculations();
+}
+
+// Cerrar modal
+function closeModal(modal) {
+    modal.style.animation = 'fadeOut 0.3s ease';
+    setTimeout(() => {
+        if (modal.parentNode) {
+            modal.parentNode.removeChild(modal);
+        }
+    }, 300);
+}
+
+// Helper: Formatear fecha para nombre de archivo
+function getFormattedDate() {
+    const now = new Date();
+    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
+}
+
+// Limpiar cálculos guardados
+function clearSavedCalculations() {
+    if (savedCalculations.length === 0) {
+        alert("No hay cálculos guardados para limpiar.");
+        return;
+    }
+    
+    if (confirm("¿Estás seguro de que quieres eliminar TODOS los cálculos guardados?")) {
+        savedCalculations = [];
+        localStorage.removeItem("stardewCalculations");
+        loadSavedCalculations();
+        showNotification("🗑️ Todos los cálculos guardados han sido eliminados");
+    }
 }
 
 // Cargar cálculos guardados
@@ -518,18 +974,26 @@ function loadSavedCalculations() {
         const calcElement = document.createElement('div');
         calcElement.className = 'saved-calculation';
         
+        // Calcular resumen de productos
+        const productNames = calc.items.slice(0, 3).map(item => item.itemName);
+        const remaining = calc.items.length - 3;
+        
         calcElement.innerHTML = `
             <div class="saved-calculation-info">
-                <p><strong>${calc.itemName}</strong> - ${calc.date}</p>
+                <p><strong>Cálculo #${index + 1}</strong> - ${calc.date}</p>
+                <p>Productos: ${calc.items.length} | Unidades: ${calc.totalItems}</p>
+                <p>Productos: ${productNames.join(', ')}${remaining > 0 ? ` y ${remaining} más...` : ''}</p>
                 <p>Total: <strong class="profit-high">${calc.totalValue}g</strong></p>
-                <p>Cantidades: N:${calc.quantities.normal} P:${calc.quantities.silver} O:${calc.quantities.gold} I:${calc.quantities.iridium}</p>
             </div>
             <div class="saved-calculation-actions">
                 <button class="btn-secondary" onclick="loadSavedCalculation(${index})">
-                    <i class="fas fa-upload"></i>
+                    <i class="fas fa-upload" title="Cargar"></i>
                 </button>
                 <button class="btn-secondary" onclick="deleteSavedCalculation(${index})">
-                    <i class="fas fa-trash"></i>
+                    <i class="fas fa-trash" title="Eliminar"></i>
+                </button>
+                <button class="btn-secondary" onclick="exportSingleCalculation(${index})">
+                    <i class="fas fa-download" title="Exportar"></i>
                 </button>
             </div>
         `;
@@ -543,43 +1007,121 @@ window.loadSavedCalculation = function(index) {
     if (index >= 0 && index < savedCalculations.length) {
         const calc = savedCalculations[index];
         
+        // Limpiar lista actual
+        calculationItems = JSON.parse(JSON.stringify(calc.items)); // Copia profunda
+        updateItemsList();
+        updateItemsCount();
+        
         // Cambiar a la sección de calculadora
         const calcLink = document.querySelector('[data-section="calculadora"]');
         if (calcLink) calcLink.click();
         
-        // Establecer valores en la calculadora
+        // Calcular y mostrar resultados
         setTimeout(() => {
-            const categorySelect = document.getElementById('calcCategory');
-            if (categorySelect) {
-                categorySelect.value = calc.category;
-                updateCalculatorItems();
-                
-                // Esperar a que se actualicen los ítems
-                setTimeout(() => {
-                    const itemSelect = document.getElementById('calcItem');
-                    if (itemSelect) itemSelect.value = calc.itemId || '';
-                    
-                    document.getElementById('calcNormal').value = calc.quantities.normal;
-                    document.getElementById('calcSilver').value = calc.quantities.silver;
-                    document.getElementById('calcGold').value = calc.quantities.gold;
-                    document.getElementById('calcIridium').value = calc.quantities.iridium;
-                    
-                    updateTotalQuantity();
-                    calculateTotal();
-                }, 100);
-            }
+            calculateTotalMultiple();
+            showNotification(`📂 Cálculo #${index + 1} cargado (${calc.items.length} productos)`);
         }, 100);
     }
 };
 
 // Eliminar cálculo guardado (función global)
 window.deleteSavedCalculation = function(index) {
-    if (confirm("¿Estás seguro de que quieres eliminar este cálculo?")) {
+    if (confirm("¿Estás seguro de que quieres eliminar este cálculo guardado?")) {
         savedCalculations.splice(index, 1);
         localStorage.setItem("stardewCalculations", JSON.stringify(savedCalculations));
         loadSavedCalculations();
+        showNotification("🗑️ Cálculo guardado eliminado");
     }
 };
+
+// Exportar un solo cálculo (función global)
+window.exportSingleCalculation = function(index) {
+    if (index >= 0 && index < savedCalculations.length) {
+        const calc = savedCalculations[index];
+        
+        const exportData = {
+            app: "Stardew Valley Planner",
+            version: "1.0",
+            exportDate: new Date().toISOString(),
+            calculation: calc,
+            summary: {
+                totalValue: calc.totalValue,
+                totalItems: calc.totalItems,
+                itemsCount: calc.items.length
+            }
+        };
+        
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `stardew_calculation_${index + 1}_${getFormattedDate()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showNotification(`✅ Cálculo #${index + 1} exportado`);
+    }
+};
+
+// Mostrar notificación
+function showNotification(message, type = "success") {
+    // Crear notificación temporal
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'error' ? '#e74c3c' : type === 'warning' ? '#f39c12' : '#2e7d32'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 9999;
+        animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    `;
+    
+    // Agregar estilos para animaciones
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    const icon = type === 'error' ? 'exclamation-triangle' : 
+                type === 'warning' ? 'exclamation-circle' : 'check-circle';
+    
+    notification.innerHTML = `
+        <i class="fas fa-${icon}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Eliminar después de 3 segundos
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+        if (style.parentNode) {
+            style.parentNode.removeChild(style);
+        }
+    }, 3000);
+}
 
 // Funciones para cargar datos iniciales
 function loadCrops() {
@@ -615,15 +1157,25 @@ function searchCrops() {
     const year = parseInt(document.getElementById('year').value);
     const growthTime = document.getElementById('growthTime').value;
     const cropType = document.getElementById('cropType').value;
-    const searchTerm = document.getElementById('searchCropName')?.value.toLowerCase().trim() || '';
+    
+    // Verificar que el elemento existe antes de acceder a su valor
+    const searchInput = document.getElementById('searchCropName');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() || '' : '';
     
     let filteredCrops = cropsDatabase.filter(crop => {
+        // Verificación segura de propiedades
+        if (!crop || !crop.name) return false;
         if (crop.year > year) return false;
-        if (season !== 'all' && !crop.seasons.includes(season)) return false;
+        
+        // Verificar que crop.seasons existe antes de usar includes
+        if (season !== 'all' && (!crop.seasons || !Array.isArray(crop.seasons) || !crop.seasons.includes(season))) {
+            return false;
+        }
+        
         if (growthTime !== 'all' && crop.growthTime > parseInt(growthTime)) return false;
         if (cropType !== 'all' && crop.type !== cropType) return false;
         
-        // Filtro por nombre
+        // Filtro por nombre con verificación segura
         if (searchTerm && !crop.name.toLowerCase().includes(searchTerm)) {
             return false;
         }
@@ -637,17 +1189,29 @@ function searchCrops() {
 function searchTrees() {
     const season = document.getElementById('treeSeason').value;
     const treeType = document.getElementById('treeType').value;
-    const searchTerm = document.getElementById('searchTreeName')?.value.toLowerCase().trim() || '';
+    
+    // Verificar que el elemento existe antes de acceder a su valor
+    const searchInput = document.getElementById('searchTreeName');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() || '' : '';
     
     let filteredTrees = treesDatabase.filter(tree => {
-        if (season !== 'all' && season !== 'multiple' && !tree.seasons.includes(season)) return false;
-        if (season === 'multiple' && tree.seasons.length <= 1) return false;
+        // Verificación segura de propiedades
+        if (!tree || !tree.name || !tree.fruitName) return false;
+        
+        // Verificar que tree.seasons existe
+        if (season !== 'all' && season !== 'multiple') {
+            if (!tree.seasons || !Array.isArray(tree.seasons) || !tree.seasons.includes(season)) {
+                return false;
+            }
+        }
+        
+        if (season === 'multiple' && (!tree.seasons || tree.seasons.length <= 1)) return false;
         if (treeType !== 'all') {
             if (treeType === 'common' && tree.saplingPrice >= 4000) return false;
             if (treeType === 'exotic' && tree.saplingPrice < 4000) return false;
         }
         
-        // Filtro por nombre
+        // Filtro por nombre con verificación segura
         if (searchTerm && !tree.name.toLowerCase().includes(searchTerm) && 
             !tree.fruitName.toLowerCase().includes(searchTerm)) {
             return false;
@@ -748,7 +1312,8 @@ function displayCrops(crops, searchTerm = '') {
     
     if (!container) return;
     
-    if (!crops || crops.length === 0) {
+    // Verificar que crops es un array válido
+    if (!crops || !Array.isArray(crops) || crops.length === 0) {
         container.innerHTML = `
             <div class="no-results">
                 <i class="fas fa-search fa-3x"></i>
@@ -1321,3 +1886,15 @@ function getSuggestions() {
         `;
     }
 }
+
+// =============================================
+// AGREGAR ESTILOS DINÁMICOS PARA ANIMACIONES
+// =============================================
+document.head.insertAdjacentHTML('beforeend', `
+<style>
+    @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+</style>
+`);

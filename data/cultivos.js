@@ -133,6 +133,18 @@ const cropsDatabase = [
         type: "standard",
         notes: "Flor, buena para regalar."
     },
+    {
+        id: "carrot",
+        name: "Zanahoria",
+        category: "vegetables",
+        season: "primavera",
+        growthTime: "3 días",
+        regrowth: null,
+        basePrice: 35,
+        qualityPrices: { normal: 35, silver: 43, gold: 52, iridium: 70 },
+        seedPrice: 20,
+        notes: "Semilla especial. Se planta en Primavera y no se puede comprar en las tiendas. Se obtiene como recompensa de la Caja de Semillas (Seed Bundle) en el Invernadero (Pantry)."
+    },
     
     // VERANO
     { 
@@ -874,6 +886,188 @@ const fishDatabase = [
         qualityPrices: { normal: 900, silver: 1125, gold: 1350, iridium: 1800 },
         notes: "Uno de los 5 peces legendarios. Solo aparece en otoño."
     },
+    {
+        id: "albacore",
+        name: "Atún Blanco",
+        category: "fish",
+        seasons: ["fall", "winter"],
+        locations: ["ocean"],
+        weather: "both",
+        time: "morning,evening,night",
+        difficulty: 60,
+        price: 75,
+        qualityPrices: { normal: 75, silver: 93, gold: 112, iridium: 150 },
+        notes: "Se pesca en el océano durante el otoño y el invierno, en las franjas horarias de mañana y tarde-noche."
+    },
+    {
+        id: "bream",
+        name: "Besugo",
+        category: "fish",
+        seasons: ["spring", "summer", "fall", "winter"],
+        locations: ["river", "town", "forest"],
+        weather: "both",
+        time: "night",
+        difficulty: 35,
+        price: 45,
+        qualityPrices: { normal: 45, silver: 56, gold: 67, iridium: 90 },
+        notes: "Un pez de río nocturno. Es activo solo después de las 6:00 PM. Jodi y Willy lo adoran como regalo."
+    },
+    {
+        id: "catfish",
+        name: "Siluro",
+        category: "fish",
+        seasons: ["spring", "summer", "fall"],
+        locations: ["river", "secret_woods", "witch_swamp"],
+        weather: "rain",
+        time: "morning,afternoon,evening",
+        difficulty: 75,
+        price: 200,
+        qualityPrices: { normal: 200, silver: 250, gold: 300, iridium: 400 },
+        notes: "Solo se puede pescar cuando llueve. Es uno de los peces más difíciles de atrapar fuera de los legendarios. Es el favorito de Krobus y de Willy."
+    },
+    {
+        id: "barbel_steed",
+        name: "Barbo",
+        category: "fish",
+        seasons: ["spring", "summer", "fall", "winter"],
+        locations: ["lake", "mountain"],
+        weather: "both",
+        time: "morning,afternoon,evening",
+        difficulty: 40,
+        price: 60,
+        qualityPrices: { normal: 60, silver: 75, gold: 90, iridium: 120 },
+        notes: "Un pez común que se encuentra en el lago de la montaña en cualquier época del año. Gus lo considera un 'gusto adquirido'."
+    },
+    {
+        id: "halibut",
+        name: "Fletán",
+        category: "fish",
+        seasons: ["spring", "summer", "winter"],
+        locations: ["ocean"],
+        weather: "both",
+        time: "morning,afternoon,evening",
+        difficulty: 50,
+        price: 80,
+        qualityPrices: { normal: 80, silver: 100, gold: 120, iridium: 160 },
+        notes: "Se pesca en el océano. No aparece en otoño. Es un pez relativamente común y es uno de los favoritos de Elliott."
+    },
+    {
+        id: "chub",
+        name: "Cachuelo",
+        category: "fish",
+        seasons: ["spring", "summer", "fall", "winter"],
+        locations: ["river", "lake", "forest"],
+        weather: "both",
+        time: "morning,afternoon,evening",
+        difficulty: 35,
+        price: 50,
+        qualityPrices: { normal: 50, silver: 62, gold: 75, iridium: 100 },
+        notes: "Un pez muy común que se encuentra en ríos y lagos en todas las estaciones. Willy lo considera un pez 'fiable'."
+    },
+    {
+        id: "flounder",
+        name: "Platija",
+        category: "fish",
+        seasons: ["spring", "summer"],
+        locations: ["ocean"],
+        weather: "both",
+        time: "morning,afternoon,evening",
+        difficulty: 50,
+        price: 100,
+        qualityPrices: { normal: 100, silver: 125, gold: 150, iridium: 200 },
+        notes: "Un pez de océano que solo se puede pescar en primavera y verano. No aparece en otoño ni invierno."
+    },
+    {
+        id: "lobster",
+        name: "Langosta",
+        category: "crab_pot",
+        seasons: ["spring", "summer", "fall", "winter"],
+        locations: ["ocean"],
+        weather: "both",
+        time: "all_day",
+        difficulty: null,
+        price: 120,
+        qualityPrices: { normal: 120, silver: 150, gold: 180, iridium: 240 },
+        notes: "Se obtiene con las Trampas de Cangrejo (Crab Pots) colocadas en el océano. Es uno de los 5 artículos necesarios para el Lote de Cangrejos (Crab Pot Bundle) del Salón Comunitaro."
+    },
+    {
+        id: "midnight_squid",
+        name: "Calamar de Medianoche",
+        category: "fish",
+        seasons: ["summer", "winter"],
+        locations: ["ocean"],
+        weather: "both",
+        time: "night",
+        difficulty: 55,
+        price: 100,
+        qualityPrices: { normal: 100, silver: 125, gold: 150, iridium: 200 },
+        notes: "Solo se puede pescar en el océano por la noche (después de las 10:00 PM). Necesario para el Acuario (Fish Tank Bundle) del Salón Comunitario."
+    },
+    {
+        id: "shrimp",
+        name: "Gamba",
+        category: "crab_pot",
+        seasons: ["spring", "summer", "fall", "winter"],
+        locations: ["ocean", "freshwater"],
+        weather: "both",
+        time: "all_day",
+        difficulty: null,
+        price: 60,
+        qualityPrices: { normal: 60, silver: 75, gold: 90, iridium: 120 },
+        notes: "Se obtiene con las Trampas de Cangrejo (Crab Pots) en agua salada o dulce. Gus puede pedirlo ocasionalmente en el Tablón de Misiones."
+    },
+    {
+        id: "scared_fish",
+        name: "Pez Asustado",
+        category: "fish",
+        seasons: ["winter"],
+        locations: ["river"],
+        weather: "rain",
+        time: "morning,afternoon,evening",
+        difficulty: 50,
+        price: 150,
+        qualityPrices: { normal: 150, silver: 187, gold: 225, iridium: 300 },
+        notes: "Solo aparece en invierno y cuando llueve. Es un pez especial que parece estar lleno de miedo. Su descripción dice: 'Parece asustado por tu presencia'."
+    },
+    {
+        id: "tuna",
+        name: "Atún",
+        category: "fish",
+        seasons: ["summer", "winter"],
+        locations: ["ocean"],
+        weather: "both",
+        time: "morning,afternoon,evening",
+        difficulty: 70,
+        price: 100,
+        qualityPrices: { normal: 100, silver: 125, gold: 150, iridium: 200 },
+        notes: "Se pesca en el océano. Es necesario para el Acuario (Fish Tank Bundle) del Salón Comunitario. También se usa en la Receta de Sushi."
+    },
+    {
+        id: "blobfish",
+        name: "Pez Gota",
+        category: "fish",
+        seasons: ["spring", "summer", "fall", "winter"],
+        locations: ["submarine"],
+        weather: "both",
+        time: "all_day",
+        difficulty: 75,
+        price: 500,
+        qualityPrices: { normal: 500, silver: 625, gold: 750, iridium: 1000 },
+        notes: "Solo se puede pescar durante el Festival de la Noche de Mercado (Night Market) en el submarino. Es uno de los peces más raros y valiosos del juego."
+    },
+    {
+        id: "sea_bass",
+        name: "Lubina",
+        category: "fish",
+        seasons: ["spring", "summer", "fall", "winter"],
+        locations: ["ocean"],
+        weather: "both",
+        time: "morning,afternoon,evening",
+        difficulty: 30,
+        price: 30,
+        qualityPrices: { normal: 30, silver: 37, gold: 45, iridium: 60 },
+        notes: "Es un pez común de océano. Es famoso por ser un pescado 'aburrido' que aparece con mucha frecuencia. De hecho, siempre es el pez número 128 cuando se pesca."
+    },
     
     // INVIERNO
     {
@@ -1114,6 +1308,50 @@ const animalsDatabase = [
         productionTime: "cada 7 días",
         notes: "Producido por dinosaurios."
     },
+    {
+        id: "mayonnaise",
+        name: "Mayonesa",
+        category: "artisan_goods",
+        ingredient: "Huevo (Normal)",
+        building: "mayonnaise_machine",
+        basePrice: 190,
+        qualityPrices: { normal: 190, silver: 237, gold: 285, iridium: 380 },
+        productionTime: "3 horas",
+        notes: "Elaborada con un huevo normal de gallina."
+    },
+    {
+        id: "duck_mayonnaise",
+        name: "Mayonesa de Pato",
+        category: "artisan_goods",
+        ingredient: "Huevo de Pato",
+        building: "mayonnaise_machine",
+        basePrice: 375,
+        qualityPrices: { normal: 375, silver: 468, gold: 562, iridium: 750 },
+        productionTime: "3 horas",
+        notes: "Elaborada con un huevo de pato."
+    },
+    {
+        id: "void_mayonnaise",
+        name: "Mayonesa del Vacío",
+        category: "artisan_goods",
+        ingredient: "Huevo del Vacío",
+        building: "mayonnaise_machine",
+        basePrice: 275,
+        qualityPrices: { normal: 275, silver: 343, gold: 412, iridium: 550 },
+        productionTime: "3 horas",
+        notes: "Elaborada con un Huevo del Vacío. Krobus la ama como regalo."
+    },
+    {
+        id: "dinosaur_mayonnaise",
+        name: "Mayonesa de Dinosaurio",
+        category: "artisan_goods",
+        ingredient: "Huevo de Dinosaurio",
+        building: "mayonnaise_machine",
+        basePrice: 800,
+        qualityPrices: { normal: 800, silver: 1000, gold: 1200, iridium: 1600 },
+        productionTime: "3 horas",
+        notes: "Elaborada con un Huevo de Dinosaurio. Es la mayonesa más valiosa."
+    },
     
     // Establo
     {
@@ -1181,6 +1419,28 @@ const animalsDatabase = [
         qualityPrices: { normal: 1065, silver: 1331, gold: 1597, iridium: 2130 },
         productionTime: "6 horas (procesador)",
         notes: "Trufa procesada en procesador de aceite."
+    },
+    {
+        id: "cheese",
+        name: "Queso",
+        category: "artisan_goods",
+        ingredient: "Leche (Normal)",
+        building: "cheese_press",
+        basePrice: 230,
+        qualityPrices: { normal: 230, silver: 287, gold: 345, iridium: 460 },
+        productionTime: "3 horas 20 minutos",
+        notes: "Elaborado con leche normal de vaca o de cabra."
+    },
+    {
+        id: "goat_cheese",
+        name: "Queso de Cabra",
+        category: "artisan_goods",
+        ingredient: "Leche de Cabra",
+        building: "cheese_press",
+        basePrice: 400,
+        qualityPrices: { normal: 400, silver: 500, gold: 600, iridium: 800 },
+        productionTime: "3 horas 20 minutos",
+        notes: "Elaborado con leche de cabra. Robin la ama como regalo."
     }
 ];
 
