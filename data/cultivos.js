@@ -1,7 +1,12 @@
 // Base de datos completa de Stardew Valley
+console.log("📦 CARGANDO DATOS DE CULTIVOS...");
 
-// Cultivos
-const cropsDatabase = [
+// =============================================
+// ASEGURAR QUE LAS VARIABLES SEAN GLOBALES
+// =============================================
+
+// Cultivos - Hacer global
+window.cropsDatabase = [
     // PRIMAVERA
     { 
         id: "blue_jazz",
@@ -137,12 +142,13 @@ const cropsDatabase = [
         id: "carrot",
         name: "Zanahoria",
         category: "vegetables",
-        season: "primavera",
-        growthTime: "3 días",
-        regrowth: null,
-        basePrice: 35,
-        qualityPrices: { normal: 35, silver: 43, gold: 52, iridium: 70 },
-        seedPrice: 20,
+        seasons: ["spring"],
+        year: 1,
+        growthTime: 3,
+        regrowTime: 0,
+        price: 20,
+        sellPrices: { normal: 35, silver: 43, gold: 52, iridium: 70 },
+        type: "special",
         notes: "Semilla especial. Se planta en Primavera y no se puede comprar en las tiendas. Se obtiene como recompensa de la Caja de Semillas (Seed Bundle) en el Invernadero (Pantry)."
     },
     
@@ -571,8 +577,8 @@ const cropsDatabase = [
     }
 ];
 
-// Árboles Frutales
-const treesDatabase = [
+// Árboles Frutales - Hacer global
+window.treesDatabase = [
     {
         id: "cherry_tree",
         name: "Cerezo",
@@ -671,8 +677,8 @@ const treesDatabase = [
     }
 ];
 
-// Peces
-const fishDatabase = [
+// Peces - Hacer global
+window.fishDatabase = [
     // PRIMAVERA
     {
         id: "anchovy",
@@ -1217,8 +1223,8 @@ const fishDatabase = [
     }
 ];
 
-// Productos Animales
-const animalsDatabase = [
+// Productos Animales - Hacer global
+window.animalsDatabase = [
     // Gallinero
     {
         id: "egg",
@@ -1444,8 +1450,8 @@ const animalsDatabase = [
     }
 ];
 
-// Hongos
-const mushroomsDatabase = [
+// Hongos - Hacer global
+window.mushroomsDatabase = [
     {
         id: "common_mushroom",
         name: "Champiñón Común",
@@ -1508,34 +1514,45 @@ const mushroomsDatabase = [
     }
 ];
 
-// Traducciones
-const seasonTranslations = {
+// =============================================
+// TRADUCCIONES Y DATOS AUXILIARES
+// =============================================
+
+window.seasonTranslations = {
     spring: "Primavera",
-    summer: "Verano",
+    summer: "Verano", 
     fall: "Otoño",
     winter: "Invierno",
     "all-year": "Todo el año",
-    multiple: "Multi-estación"
+    "all": "Todas"
 };
 
-const qualityTranslations = {
-    normal: "Normal",
-    silver: "Plata",
-    gold: "Oro",
-    iridium: "Iridio"
-};
-
-const locationTranslations = {
+window.locationTranslations = {
     river: "Río",
-    lake: "Lago",
+    lake: "Lago", 
     ocean: "Océano",
     forest: "Bosque",
     mine: "Mina",
-    secret: "Bosque Secreto/Alcantarillas",
-    farm: "Granja"
+    secret: "Secreto",
+    town: "Pueblo",
+    mountain: "Montaña",
+    submarine: "Submarino",
+    farm: "Granja",
+    freshwater: "Agua dulce"
 };
 
-const buildingTranslations = {
+window.buildingTranslations = {
     coop: "Gallinero",
     barn: "Establo"
 };
+
+// =============================================
+// CONFIRMAR CARGA
+// =============================================
+
+console.log("✅ Bases de datos cargadas:");
+console.log(`   Cultivos: ${window.cropsDatabase ? window.cropsDatabase.length : 0}`);
+console.log(`   Árboles: ${window.treesDatabase ? window.treesDatabase.length : 0}`);
+console.log(`   Peces: ${window.fishDatabase ? window.fishDatabase.length : 0}`);
+console.log(`   Animales: ${window.animalsDatabase ? window.animalsDatabase.length : 0}`);
+console.log(`   Hongos: ${window.mushroomsDatabase ? window.mushroomsDatabase.length : 0}`);

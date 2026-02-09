@@ -8,35 +8,72 @@ let savedCalculations = JSON.parse(localStorage.getItem("stardewCalculations")) 
 let searchTimeout = null;
 let calculationItems = []; // Array para almacenar múltiples productos
 
+// =============================================
+// CÓDIGO DE DIAGNÓSTICO - AGREGAR AL INICIO
+// =============================================
+
+// Función de prueba para mostrar si todo está funcionando
+function pruebaRapida() {
+    console.log("🧪 EJECUTANDO PRUEBA RÁPIDA...");
+    
+    // 1. Verificar que el DOM esté listo
+    console.log("1. DOM listo: ✅");
+    
+    // 2. Verificar contenedores
+    const container = document.getElementById('resultsContainer');
+    console.log("2. Contenedor #resultsContainer:", container ? "ENCONTRADO" : "NO ENCONTRADO");
+    
+    // 3. Verificar datos
+    console.log("3. Datos cargados:", {
+        crops: cropsDatabase ? cropsDatabase.length + " cultivos" : "NO",
+        trees: treesDatabase ? treesDatabase.length + " árboles" : "NO",
+        fish: fishDatabase ? fishDatabase.length + " peces" : "NO"
+    });
+    
+    // 4. Mostrar algo en la página para probar
+    if (container && cropsDatabase) {
+        const primerCultivo = cropsDatabase[0];
+        container.innerHTML = `
+            <div style="background: #4CAF50; color: white; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                <h3>✅ PRUEBA EXITOSA</h3>
+                <p>Los datos se cargaron correctamente:</p>
+                <ul>
+                    <li>Cultivos: ${cropsDatabase.length}</li>
+                    <li>Árboles: ${treesDatabase.length}</li>
+                    <li>Peces: ${fishDatabase.length}</li>
+                </ul>
+                <p>Primer cultivo: <strong>${primerCultivo.name}</strong> (${primerCultivo.seasons.join(', ')})</p>
+            </div>
+        `;
+        
+        // También actualizar el contador
+        const countElement = document.getElementById('resultsCount');
+        if (countElement) {
+            countElement.textContent = `(${cropsDatabase.length} cultivos)`;
+        }
+    }
+}
+
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("Inicializando Stardew Valley Planner...");
+    console.log("🚀 Inicializando Stardew Valley Planner...");
     
+    // EJECUTAR PRUEBA INMEDIATAMENTE
+    pruebaRapida();
+    
+    // Luego continuar con la inicialización normal
     initializeNavigation();
     initializeEventListeners();
     initializeCalculator();
     setupRealTimeSearch();
     
     // Cargar datos iniciales
-    if (cropsDatabase && cropsDatabase.length > 0) {
-        loadCrops();
-    }
-    
-    if (treesDatabase && treesDatabase.length > 0) {
-        loadTrees();
-    }
-    
-    if (fishDatabase && fishDatabase.length > 0) {
-        loadFish();
-    }
-    
-    if (animalsDatabase && animalsDatabase.length > 0) {
-        loadAnimals();
-    }
-    
-    if (mushroomsDatabase && mushroomsDatabase.length > 0) {
-        loadMushrooms();
-    }
+    console.log("📊 Cargando datos iniciales...");
+    loadCrops();
+    loadTrees();
+    loadFish();
+    loadAnimals();
+    loadMushrooms();
     
     updateTotalQuantity();
     loadSavedCalculations();
@@ -156,60 +193,43 @@ function initializeEventListeners() {
 
 // Configurar búsqueda en tiempo real
 function setupRealTimeSearch() {
-    // Cultivos
-    const searchCropInput = document.getElementById('searchCropName');
-    if (searchCropInput) {
-        searchCropInput.addEventListener('input', function() {
+    // Función auxiliar para manejar inputs de búsqueda
+    function setupSearch(inputId, searchFunction) {
+        const searchInput = document.getElementById(inputId);
+        if (!searchInput) return;
+        
+        let lastValue = '';
+        
+        searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                searchCrops();
-            }, 300);
+            
+            const currentValue = this.value.trim();
+            
+            // Solo ejecutar la búsqueda si el valor realmente cambió
+            if (currentValue !== lastValue) {
+                searchTimeout = setTimeout(() => {
+                    searchFunction();
+                    lastValue = currentValue;
+                }, 300);
+            }
+        });
+        
+        // También ejecutar búsqueda al perder el foco (para casos donde el timeout no se disparó)
+        searchInput.addEventListener('blur', function() {
+            const currentValue = this.value.trim();
+            if (currentValue !== lastValue) {
+                searchFunction();
+                lastValue = currentValue;
+            }
         });
     }
     
-    // Árboles
-    const searchTreeInput = document.getElementById('searchTreeName');
-    if (searchTreeInput) {
-        searchTreeInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                searchTrees();
-            }, 300);
-        });
-    }
-    
-    // Peces
-    const searchFishInput = document.getElementById('searchFishName');
-    if (searchFishInput) {
-        searchFishInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                searchFish();
-            }, 300);
-        });
-    }
-    
-    // Animales
-    const searchAnimalInput = document.getElementById('searchAnimalName');
-    if (searchAnimalInput) {
-        searchAnimalInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                searchAnimals();
-            }, 300);
-        });
-    }
-    
-    // Hongos
-    const searchMushroomInput = document.getElementById('searchMushroomName');
-    if (searchMushroomInput) {
-        searchMushroomInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                searchMushrooms();
-            }, 300);
-        });
-    }
+    // Configurar cada buscador
+    setupSearch('searchCropName', searchCrops);
+    setupSearch('searchTreeName', searchTrees);
+    setupSearch('searchFishName', searchFish);
+    setupSearch('searchAnimalName', searchAnimals);
+    setupSearch('searchMushroomName', searchMushrooms);
     
     // Calculadora
     const searchCalcInput = document.getElementById('searchCalcItem');
@@ -275,28 +295,30 @@ function updateCalculatorItems() {
     let database = [];
     switch(category) {
         case 'crops':
-            database = cropsDatabase;
+            database = window.cropsDatabase || [];
             break;
         case 'trees':
-            database = treesDatabase;
+            database = window.treesDatabase || [];
             break;
         case 'fish':
-            database = fishDatabase;
+            database = window.fishDatabase || [];
             break;
         case 'animals':
-            database = animalsDatabase;
+            database = window.animalsDatabase || [];
             break;
         case 'mushrooms':
-            database = mushroomsDatabase;
+            database = window.mushroomsDatabase || [];
             break;
     }
     
     // Agregar opciones al select
     database.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.id;
-        option.textContent = item.name;
-        itemSelect.appendChild(option);
+        if (item && item.id && item.name) {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.name;
+            itemSelect.appendChild(option);
+        }
     });
 }
 
@@ -369,23 +391,23 @@ function addToCalculation() {
     
     switch(category) {
         case 'crops':
-            database = cropsDatabase;
+            database = window.cropsDatabase || [];
             break;
         case 'trees':
-            database = treesDatabase;
+            database = window.treesDatabase || [];
             break;
         case 'fish':
-            database = fishDatabase;
+            database = window.fishDatabase || [];
             break;
         case 'animals':
-            database = animalsDatabase;
+            database = window.animalsDatabase || [];
             break;
         case 'mushrooms':
-            database = mushroomsDatabase;
+            database = window.mushroomsDatabase || [];
             break;
     }
     
-    item = database.find(i => i.id === itemId);
+    item = database.find(i => i && i.id === itemId);
     
     if (!item) {
         alert("Ítem no encontrado.");
@@ -404,7 +426,7 @@ function addToCalculation() {
     const calculationItem = {
         id: Date.now(), // ID único
         itemId: item.id,
-        itemName: item.name,
+        itemName: item.name || "Sin nombre",
         category: category,
         quantities: quantities,
         itemValue: itemValue,
@@ -1125,58 +1147,61 @@ function showNotification(message, type = "success") {
 
 // Funciones para cargar datos iniciales
 function loadCrops() {
-    if (!cropsDatabase || cropsDatabase.length === 0) return;
+    if (!window.cropsDatabase || cropsDatabase.length === 0) return;
     
-    const initialCrops = cropsDatabase.filter(crop => crop.year === 1);
+    const initialCrops = cropsDatabase.filter(crop => crop && crop.year === 1);
     displayCrops(initialCrops);
 }
 
 function loadTrees() {
-    if (!treesDatabase || treesDatabase.length === 0) return;
+    if (!window.treesDatabase || treesDatabase.length === 0) return;
     displayTrees(treesDatabase);
 }
 
 function loadFish() {
-    if (!fishDatabase || fishDatabase.length === 0) return;
+    if (!window.fishDatabase || fishDatabase.length === 0) return;
     displayFish(fishDatabase);
 }
 
 function loadAnimals() {
-    if (!animalsDatabase || animalsDatabase.length === 0) return;
+    if (!window.animalsDatabase || animalsDatabase.length === 0) return;
     displayAnimals(animalsDatabase);
 }
 
 function loadMushrooms() {
-    if (!mushroomsDatabase || mushroomsDatabase.length === 0) return;
+    if (!window.mushroomsDatabase || mushroomsDatabase.length === 0) return;
     displayMushrooms(mushroomsDatabase);
 }
 
 // Funciones de búsqueda y filtrado (con búsqueda por nombre)
 function searchCrops() {
     const season = document.getElementById('season').value;
-    const year = parseInt(document.getElementById('year').value);
+    const year = parseInt(document.getElementById('year').value) || 1;
     const growthTime = document.getElementById('growthTime').value;
     const cropType = document.getElementById('cropType').value;
-    
-    // Verificar que el elemento existe antes de acceder a su valor
     const searchInput = document.getElementById('searchCropName');
     const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() || '' : '';
     
-    let filteredCrops = cropsDatabase.filter(crop => {
-        // Verificación segura de propiedades
-        if (!crop || !crop.name) return false;
+    let filteredCrops = (window.cropsDatabase || []).filter(crop => {
+        // Verificar que el cultivo existe
+        if (!crop) return false;
+        
+        // Verificar propiedades básicas
         if (crop.year > year) return false;
         
-        // Verificar que crop.seasons existe antes de usar includes
+        // Verificar estación
         if (season !== 'all' && (!crop.seasons || !Array.isArray(crop.seasons) || !crop.seasons.includes(season))) {
             return false;
         }
         
+        // Verificar tiempo de crecimiento
         if (growthTime !== 'all' && crop.growthTime > parseInt(growthTime)) return false;
+        
+        // Verificar tipo de cultivo
         if (cropType !== 'all' && crop.type !== cropType) return false;
         
-        // Filtro por nombre con verificación segura
-        if (searchTerm && !crop.name.toLowerCase().includes(searchTerm)) {
+        // Filtro por nombre
+        if (searchTerm && (!crop.name || !crop.name.toLowerCase().includes(searchTerm))) {
             return false;
         }
         
@@ -1189,16 +1214,13 @@ function searchCrops() {
 function searchTrees() {
     const season = document.getElementById('treeSeason').value;
     const treeType = document.getElementById('treeType').value;
-    
-    // Verificar que el elemento existe antes de acceder a su valor
     const searchInput = document.getElementById('searchTreeName');
     const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() || '' : '';
     
-    let filteredTrees = treesDatabase.filter(tree => {
-        // Verificación segura de propiedades
-        if (!tree || !tree.name || !tree.fruitName) return false;
+    let filteredTrees = (window.treesDatabase || []).filter(tree => {
+        if (!tree) return false;
         
-        // Verificar que tree.seasons existe
+        // Verificar estación
         if (season !== 'all' && season !== 'multiple') {
             if (!tree.seasons || !Array.isArray(tree.seasons) || !tree.seasons.includes(season)) {
                 return false;
@@ -1211,9 +1233,9 @@ function searchTrees() {
             if (treeType === 'exotic' && tree.saplingPrice < 4000) return false;
         }
         
-        // Filtro por nombre con verificación segura
-        if (searchTerm && !tree.name.toLowerCase().includes(searchTerm) && 
-            !tree.fruitName.toLowerCase().includes(searchTerm)) {
+        // Filtro por nombre
+        if (searchTerm && (!tree.name || !tree.name.toLowerCase().includes(searchTerm)) && 
+            (!tree.fruitName || !tree.fruitName.toLowerCase().includes(searchTerm))) {
             return false;
         }
         
@@ -1228,9 +1250,12 @@ function searchFish() {
     const location = document.getElementById('fishLocation').value;
     const weather = document.getElementById('fishWeather').value;
     const time = document.getElementById('fishTime').value;
-    const searchTerm = document.getElementById('searchFishName')?.value.toLowerCase().trim() || '';
+    const searchInput = document.getElementById('searchFishName');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() || '' : '';
     
-    let filteredFish = fishDatabase.filter(fish => {
+    let filteredFish = (window.fishDatabase || []).filter(fish => {
+        if (!fish) return false;
+        
         if (season !== 'all' && season !== 'all-year' && !fish.seasons.includes(season)) {
             if (fish.seasons[0] !== 'all-year') return false;
         }
@@ -1239,7 +1264,7 @@ function searchFish() {
         if (time !== 'all' && !fish.time.includes(time)) return false;
         
         // Filtro por nombre
-        if (searchTerm && !fish.name.toLowerCase().includes(searchTerm)) {
+        if (searchTerm && (!fish.name || !fish.name.toLowerCase().includes(searchTerm))) {
             return false;
         }
         
@@ -1253,9 +1278,12 @@ function searchAnimals() {
     const animalType = document.getElementById('animalType').value;
     const productType = document.getElementById('productType').value;
     const productQuality = document.getElementById('productQuality').value;
-    const searchTerm = document.getElementById('searchAnimalName')?.value.toLowerCase().trim() || '';
+    const searchInput = document.getElementById('searchAnimalName');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() || '' : '';
     
-    let filteredAnimals = animalsDatabase.filter(animal => {
+    let filteredAnimals = (window.animalsDatabase || []).filter(animal => {
+        if (!animal) return false;
+        
         if (animalType !== 'all' && animal.building !== animalType) return false;
         if (productType !== 'all') {
             if (productType === 'egg' && !animal.name.toLowerCase().includes('huevo')) return false;
@@ -1268,8 +1296,8 @@ function searchAnimals() {
         }
         
         // Filtro por nombre
-        if (searchTerm && !animal.name.toLowerCase().includes(searchTerm) && 
-            !animal.animal.toLowerCase().includes(searchTerm)) {
+        if (searchTerm && (!animal.name || !animal.name.toLowerCase().includes(searchTerm)) && 
+            (!animal.animal || !animal.animal.toLowerCase().includes(searchTerm))) {
             return false;
         }
         
@@ -1283,9 +1311,12 @@ function searchMushrooms() {
     const season = document.getElementById('mushroomSeason').value;
     const location = document.getElementById('mushroomLocation').value;
     const mushroomType = document.getElementById('mushroomType').value;
-    const searchTerm = document.getElementById('searchMushroomName')?.value.toLowerCase().trim() || '';
+    const searchInput = document.getElementById('searchMushroomName');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() || '' : '';
     
-    let filteredMushrooms = mushroomsDatabase.filter(mushroom => {
+    let filteredMushrooms = (window.mushroomsDatabase || []).filter(mushroom => {
+        if (!mushroom) return false;
+        
         if (season !== 'all' && !mushroom.seasons.includes(season)) return false;
         if (location !== 'all' && !mushroom.locations.includes(location)) return false;
         if (mushroomType !== 'all') {
@@ -1295,7 +1326,7 @@ function searchMushrooms() {
         }
         
         // Filtro por nombre
-        if (searchTerm && !mushroom.name.toLowerCase().includes(searchTerm)) {
+        if (searchTerm && (!mushroom.name || !mushroom.name.toLowerCase().includes(searchTerm))) {
             return false;
         }
         
@@ -1312,8 +1343,7 @@ function displayCrops(crops, searchTerm = '') {
     
     if (!container) return;
     
-    // Verificar que crops es un array válido
-    if (!crops || !Array.isArray(crops) || crops.length === 0) {
+    if (!crops || crops.length === 0) {
         container.innerHTML = `
             <div class="no-results">
                 <i class="fas fa-search fa-3x"></i>
@@ -1330,11 +1360,25 @@ function displayCrops(crops, searchTerm = '') {
     let html = '';
     
     crops.forEach(crop => {
+        if (!crop) return; // Saltar si el cultivo es undefined
+        
+        // Asegurarse de que todas las propiedades existan
+        const sellPrices = crop.sellPrices || {normal: 0, silver: 0, gold: 0, iridium: 0};
+        const cropPrice = crop.price || 0;
+        const cropName = crop.name || "Cultivo sin nombre";
+        const seasons = crop.seasons || [];
+        const cropType = crop.type || "standard";
+        const cropYear = crop.year || 1;
+        const growthTime = crop.growthTime || 0;
+        const regrowTime = crop.regrowTime || 0;
+        const cropNotes = crop.notes || "Sin información adicional.";
+        
+        // Calcular ganancias
         const profits = {
-            normal: (crop.sellPrices.normal || 0) - crop.price,
-            silver: (crop.sellPrices.silver || 0) - crop.price,
-            gold: (crop.sellPrices.gold || 0) - crop.price,
-            iridium: (crop.sellPrices.iridium || 0) - crop.price
+            normal: (sellPrices.normal || 0) - cropPrice,
+            silver: (sellPrices.silver || 0) - cropPrice,
+            gold: (sellPrices.gold || 0) - cropPrice,
+            iridium: (sellPrices.iridium || 0) - cropPrice
         };
         
         const getProfitClass = (profit) => {
@@ -1343,13 +1387,14 @@ function displayCrops(crops, searchTerm = '') {
             return "profit-low";
         };
         
-        const seasonClass = crop.seasons.length > 1 ? "multi-season-card" : `${crop.seasons[0]}-card`;
+        const seasonClass = seasons.length > 1 ? "multi-season-card" : 
+                           seasons.length > 0 ? `${seasons[0]}-card` : "spring-card";
         
         // Resaltar texto de búsqueda si existe
-        let displayName = crop.name;
+        let displayName = cropName;
         if (searchTerm) {
             const regex = new RegExp(`(${searchTerm})`, 'gi');
-            displayName = crop.name.replace(regex, '<span class="highlight">$1</span>');
+            displayName = cropName.replace(regex, '<span class="highlight">$1</span>');
         }
         
         html += `
@@ -1357,8 +1402,8 @@ function displayCrops(crops, searchTerm = '') {
             <div class="item-header">
                 <div class="item-name">${displayName}</div>
                 <div>
-                    ${crop.seasons.map(season => 
-                        `<span class="season-tag tag-${season}">${seasonTranslations[season]}</span>`
+                    ${seasons.map(season => 
+                        `<span class="season-tag tag-${season}">${seasonTranslations[season] || season}</span>`
                     ).join('')}
                 </div>
             </div>
@@ -1366,21 +1411,21 @@ function displayCrops(crops, searchTerm = '') {
             <div class="item-details">
                 <div class="item-detail">
                     <strong>Crecimiento:</strong><br>
-                    ${crop.growthTime} días ${crop.regrowTime > 0 ? `+ ${crop.regrowTime}d (re-crece)` : ''}
+                    ${growthTime} días ${regrowTime > 0 ? `+ ${regrowTime}d (re-crece)` : ''}
                 </div>
                 <div class="item-detail">
                     <strong>Precio semilla:</strong><br>
-                    ${crop.price}g
+                    ${cropPrice}g
                 </div>
                 <div class="item-detail">
                     <strong>Tipo:</strong><br>
-                    ${getCropTypeName(crop.type)}<br>
-                    Año ${crop.year}+
+                    ${getCropTypeName(cropType)}<br>
+                    Año ${cropYear}+
                 </div>
                 <div class="item-detail">
                     <strong>Ganancia (Normal):</strong><br>
                     <span class="${getProfitClass(profits.normal)}">+${profits.normal}g</span><br>
-                    ${crop.price > 0 ? `ROI: ${((profits.normal / crop.price) * 100).toFixed(0)}%` : ''}
+                    ${cropPrice > 0 ? `ROI: ${((profits.normal / cropPrice) * 100).toFixed(0)}%` : ''}
                 </div>
             </div>
             
@@ -1394,10 +1439,10 @@ function displayCrops(crops, searchTerm = '') {
                 </div>
                 <div class="quality-price-row">
                     <div>Precio</div>
-                    <div>${crop.sellPrices.normal}g</div>
-                    <div>${crop.sellPrices.silver}g</div>
-                    <div>${crop.sellPrices.gold}g</div>
-                    <div>${crop.sellPrices.iridium}g</div>
+                    <div>${sellPrices.normal || 0}g</div>
+                    <div>${sellPrices.silver || 0}g</div>
+                    <div>${sellPrices.gold || 0}g</div>
+                    <div>${sellPrices.iridium || 0}g</div>
                 </div>
                 <div class="quality-price-row">
                     <div>Ganancia</div>
@@ -1409,7 +1454,7 @@ function displayCrops(crops, searchTerm = '') {
             </div>
             
             <div class="note">
-                <strong>Notas:</strong> ${crop.notes}
+                <strong>Notas:</strong> ${cropNotes}
             </div>
         </div>
         `;
@@ -1441,15 +1486,27 @@ function displayTrees(trees, searchTerm = '') {
     let html = '';
     
     trees.forEach(tree => {
-        const seasonClass = tree.seasons.length > 1 ? "multi-season-card" : `${tree.seasons[0]}-card`;
+        if (!tree) return;
+        
+        // Asegurar propiedades
+        const treeName = tree.name || "Árbol sin nombre";
+        const fruitName = tree.fruitName || "Fruto sin nombre";
+        const seasons = tree.seasons || [];
+        const saplingPrice = tree.saplingPrice || 0;
+        const growthTime = tree.growthTime || 28;
+        const fruitPrices = tree.fruitQualityPrices || {normal: 0, silver: 0, gold: 0, iridium: 0};
+        const treeNotes = tree.notes || "Sin información adicional.";
+        
+        const seasonClass = seasons.length > 1 ? "multi-season-card" : 
+                           seasons.length > 0 ? `${seasons[0]}-card` : "spring-card";
         
         // Resaltar texto de búsqueda
-        let displayName = tree.name;
-        let displayFruit = tree.fruitName;
+        let displayName = treeName;
+        let displayFruit = fruitName;
         if (searchTerm) {
             const regex = new RegExp(`(${searchTerm})`, 'gi');
-            displayName = tree.name.replace(regex, '<span class="highlight">$1</span>');
-            displayFruit = tree.fruitName.replace(regex, '<span class="highlight">$1</span>');
+            displayName = treeName.replace(regex, '<span class="highlight">$1</span>');
+            displayFruit = fruitName.replace(regex, '<span class="highlight">$1</span>');
         }
         
         html += `
@@ -1457,8 +1514,8 @@ function displayTrees(trees, searchTerm = '') {
             <div class="item-header">
                 <div class="item-name">${displayName}</div>
                 <div>
-                    ${tree.seasons.map(season => 
-                        `<span class="season-tag tag-${season}">${seasonTranslations[season]}</span>`
+                    ${seasons.map(season => 
+                        `<span class="season-tag tag-${season}">${seasonTranslations[season] || season}</span>`
                     ).join('')}
                 </div>
             </div>
@@ -1470,11 +1527,11 @@ function displayTrees(trees, searchTerm = '') {
                 </div>
                 <div class="item-detail">
                     <strong>Tiempo crecimiento:</strong><br>
-                    ${tree.growthTime} días
+                    ${growthTime} días
                 </div>
                 <div class="item-detail">
                     <strong>Precio árbol:</strong><br>
-                    ${tree.saplingPrice}g
+                    ${saplingPrice}g
                 </div>
                 <div class="item-detail">
                     <strong>Producción:</strong><br>
@@ -1492,15 +1549,15 @@ function displayTrees(trees, searchTerm = '') {
                 </div>
                 <div class="quality-price-row">
                     <div>Precio</div>
-                    <div>${tree.fruitQualityPrices.normal}g</div>
-                    <div>${tree.fruitQualityPrices.silver}g</div>
-                    <div>${tree.fruitQualityPrices.gold}g</div>
-                    <div>${tree.fruitQualityPrices.iridium}g</div>
+                    <div>${fruitPrices.normal || 0}g</div>
+                    <div>${fruitPrices.silver || 0}g</div>
+                    <div>${fruitPrices.gold || 0}g</div>
+                    <div>${fruitPrices.iridium || 0}g</div>
                 </div>
             </div>
             
             <div class="note">
-                <strong>Notas:</strong> ${tree.notes}
+                <strong>Notas:</strong> ${treeNotes}
             </div>
         </div>
         `;
@@ -1532,14 +1589,25 @@ function displayFish(fishList, searchTerm = '') {
     let html = '';
     
     fishList.forEach(fish => {
-        const seasons = fish.seasons[0] === 'all-year' ? ['all-year'] : fish.seasons;
-        const seasonClass = seasons.length > 1 ? "multi-season-card" : seasons[0] === 'all-year' ? "multi-season-card" : `${seasons[0]}-card`;
+        if (!fish) return;
+        
+        // Asegurar propiedades
+        const fishName = fish.name || "Pez sin nombre";
+        const seasons = fish.seasons || [];
+        const fishSeasons = seasons[0] === 'all-year' ? ['all-year'] : seasons;
+        const seasonClass = fishSeasons.length > 1 ? "multi-season-card" : fishSeasons[0] === 'all-year' ? "multi-season-card" : `${fishSeasons[0]}-card`;
+        const locations = fish.locations || [];
+        const weather = fish.weather || "sunny";
+        const time = fish.time || "morning";
+        const difficulty = fish.difficulty || 0;
+        const qualityPrices = fish.qualityPrices || {normal: 0, silver: 0, gold: 0, iridium: 0};
+        const fishNotes = fish.notes || "Sin información adicional.";
         
         // Resaltar texto de búsqueda
-        let displayName = fish.name;
+        let displayName = fishName;
         if (searchTerm) {
             const regex = new RegExp(`(${searchTerm})`, 'gi');
-            displayName = fish.name.replace(regex, '<span class="highlight">$1</span>');
+            displayName = fishName.replace(regex, '<span class="highlight">$1</span>');
         }
         
         html += `
@@ -1547,8 +1615,8 @@ function displayFish(fishList, searchTerm = '') {
             <div class="item-header">
                 <div class="item-name">${displayName}</div>
                 <div>
-                    ${seasons.map(season => 
-                        `<span class="season-tag tag-${season}">${seasonTranslations[season]}</span>`
+                    ${fishSeasons.map(season => 
+                        `<span class="season-tag tag-${season}">${seasonTranslations[season] || season}</span>`
                     ).join('')}
                 </div>
             </div>
@@ -1556,15 +1624,15 @@ function displayFish(fishList, searchTerm = '') {
             <div class="item-details">
                 <div class="item-detail">
                     <strong>Ubicación:</strong><br>
-                    ${fish.locations.map(loc => locationTranslations[loc]).join(', ')}
+                    ${locations.map(loc => locationTranslations[loc] || loc).join(', ')}
                 </div>
                 <div class="item-detail">
                     <strong>Clima:</strong><br>
-                    ${fish.weather === 'both' ? 'Cualquier clima' : fish.weather === 'sunny' ? 'Soleado' : 'Lluvioso'}
+                    ${weather === 'both' ? 'Cualquier clima' : weather === 'sunny' ? 'Soleado' : 'Lluvioso'}
                 </div>
                 <div class="item-detail">
                     <strong>Horario:</strong><br>
-                    ${fish.time.split(',').map(t => {
+                    ${time.split(',').map(t => {
                         if (t === 'morning') return '6AM-12PM';
                         if (t === 'afternoon') return '12PM-6PM';
                         if (t === 'evening') return '6PM-2AM';
@@ -1573,7 +1641,7 @@ function displayFish(fishList, searchTerm = '') {
                 </div>
                 <div class="item-detail">
                     <strong>Dificultad:</strong><br>
-                    ${fish.difficulty}/100
+                    ${difficulty}/100
                 </div>
             </div>
             
@@ -1587,15 +1655,15 @@ function displayFish(fishList, searchTerm = '') {
                 </div>
                 <div class="quality-price-row">
                     <div>Precio</div>
-                    <div>${fish.qualityPrices.normal}g</div>
-                    <div>${fish.qualityPrices.silver}g</div>
-                    <div>${fish.qualityPrices.gold}g</div>
-                    <div>${fish.qualityPrices.iridium}g</div>
+                    <div>${qualityPrices.normal || 0}g</div>
+                    <div>${qualityPrices.silver || 0}g</div>
+                    <div>${qualityPrices.gold || 0}g</div>
+                    <div>${qualityPrices.iridium || 0}g</div>
                 </div>
             </div>
             
             <div class="note">
-                <strong>Notas:</strong> ${fish.notes}
+                <strong>Notas:</strong> ${fishNotes}
             </div>
         </div>
         `;
@@ -1627,15 +1695,25 @@ function displayAnimals(animals, searchTerm = '') {
     let html = '';
     
     animals.forEach(animal => {
-        const buildingClass = animal.building === 'coop' ? 'spring-card' : 'fall-card';
+        if (!animal) return;
+        
+        // Asegurar propiedades
+        const animalName = animal.name || "Producto sin nombre";
+        const animalType = animal.animal || "Animal desconocido";
+        const building = animal.building || "coop";
+        const buildingClass = building === 'coop' ? 'spring-card' : 'fall-card';
+        const productionTime = animal.productionTime || "Diario";
+        const basePrice = animal.basePrice || 0;
+        const qualityPrices = animal.qualityPrices || null;
+        const animalNotes = animal.notes || "Sin información adicional.";
         
         // Resaltar texto de búsqueda
-        let displayName = animal.name;
-        let displayAnimal = animal.animal;
+        let displayName = animalName;
+        let displayAnimal = animalType;
         if (searchTerm) {
             const regex = new RegExp(`(${searchTerm})`, 'gi');
-            displayName = animal.name.replace(regex, '<span class="highlight">$1</span>');
-            displayAnimal = animal.animal.replace(regex, '<span class="highlight">$1</span>');
+            displayName = animalName.replace(regex, '<span class="highlight">$1</span>');
+            displayAnimal = animalType.replace(regex, '<span class="highlight">$1</span>');
         }
         
         html += `
@@ -1643,8 +1721,8 @@ function displayAnimals(animals, searchTerm = '') {
             <div class="item-header">
                 <div class="item-name">${displayName}</div>
                 <div>
-                    <span class="season-tag" style="background-color: ${animal.building === 'coop' ? '#ffd166' : '#e76f51'}; color: #1e3a2f;">
-                        ${buildingTranslations[animal.building]}
+                    <span class="season-tag" style="background-color: ${building === 'coop' ? '#ffd166' : '#e76f51'}; color: #1e3a2f;">
+                        ${buildingTranslations[building] || building}
                     </span>
                 </div>
             </div>
@@ -1656,15 +1734,15 @@ function displayAnimals(animals, searchTerm = '') {
                 </div>
                 <div class="item-detail">
                     <strong>Producción:</strong><br>
-                    ${animal.productionTime}
+                    ${productionTime}
                 </div>
                 <div class="item-detail">
                     <strong>Edificio:</strong><br>
-                    ${buildingTranslations[animal.building]}
+                    ${buildingTranslations[building] || building}
                 </div>
             </div>
             
-            ${animal.qualityPrices ? `
+            ${qualityPrices ? `
             <div class="quality-prices">
                 <div class="quality-price-row header">
                     <div>Calidad</div>
@@ -1675,23 +1753,23 @@ function displayAnimals(animals, searchTerm = '') {
                 </div>
                 <div class="quality-price-row">
                     <div>Precio</div>
-                    <div>${animal.qualityPrices.normal}g</div>
-                    <div>${animal.qualityPrices.silver}g</div>
-                    <div>${animal.qualityPrices.gold}g</div>
-                    <div>${animal.qualityPrices.iridium}g</div>
+                    <div>${qualityPrices.normal || 0}g</div>
+                    <div>${qualityPrices.silver || 0}g</div>
+                    <div>${qualityPrices.gold || 0}g</div>
+                    <div>${qualityPrices.iridium || 0}g</div>
                 </div>
             </div>
             ` : `
             <div class="quality-prices">
                 <div class="quality-price-row">
                     <div><strong>Precio fijo:</strong></div>
-                    <div colspan="4">${animal.basePrice}g</div>
+                    <div colspan="4">${basePrice}g</div>
                 </div>
             </div>
             `}
             
             <div class="note">
-                <strong>Notas:</strong> ${animal.notes}
+                <strong>Notas:</strong> ${animalNotes}
             </div>
         </div>
         `;
@@ -1723,13 +1801,23 @@ function displayMushrooms(mushrooms, searchTerm = '') {
     let html = '';
     
     mushrooms.forEach(mushroom => {
-        const seasonClass = mushroom.seasons.length > 3 ? "multi-season-card" : `${mushroom.seasons[0]}-card`;
+        if (!mushroom) return;
+        
+        // Asegurar propiedades
+        const mushroomName = mushroom.name || "Hongo sin nombre";
+        const seasons = mushroom.seasons || [];
+        const seasonClass = seasons.length > 3 ? "multi-season-card" : 
+                           seasons.length > 0 ? `${seasons[0]}-card` : "spring-card";
+        const locations = mushroom.locations || [];
+        const price = mushroom.price || 0;
+        const qualityPrices = mushroom.qualityPrices || {normal: 0, silver: 0, gold: 0, iridium: 0};
+        const mushroomNotes = mushroom.notes || "Sin información adicional.";
         
         // Resaltar texto de búsqueda
-        let displayName = mushroom.name;
+        let displayName = mushroomName;
         if (searchTerm) {
             const regex = new RegExp(`(${searchTerm})`, 'gi');
-            displayName = mushroom.name.replace(regex, '<span class="highlight">$1</span>');
+            displayName = mushroomName.replace(regex, '<span class="highlight">$1</span>');
         }
         
         html += `
@@ -1737,8 +1825,8 @@ function displayMushrooms(mushrooms, searchTerm = '') {
             <div class="item-header">
                 <div class="item-name">${displayName}</div>
                 <div>
-                    ${mushroom.seasons.map(season => 
-                        `<span class="season-tag tag-${season}">${seasonTranslations[season]}</span>`
+                    ${seasons.map(season => 
+                        `<span class="season-tag tag-${season}">${seasonTranslations[season] || season}</span>`
                     ).join('')}
                 </div>
             </div>
@@ -1746,11 +1834,11 @@ function displayMushrooms(mushrooms, searchTerm = '') {
             <div class="item-details">
                 <div class="item-detail">
                     <strong>Ubicación:</strong><br>
-                    ${mushroom.locations.map(loc => locationTranslations[loc]).join(', ')}
+                    ${locations.map(loc => locationTranslations[loc] || loc).join(', ')}
                 </div>
                 <div class="item-detail">
                     <strong>Precio base:</strong><br>
-                    ${mushroom.price}g
+                    ${price}g
                 </div>
             </div>
             
@@ -1764,15 +1852,15 @@ function displayMushrooms(mushrooms, searchTerm = '') {
                 </div>
                 <div class="quality-price-row">
                     <div>Precio</div>
-                    <div>${mushroom.qualityPrices.normal}g</div>
-                    <div>${mushroom.qualityPrices.silver}g</div>
-                    <div>${mushroom.qualityPrices.gold}g</div>
-                    <div>${mushroom.qualityPrices.iridium}g</div>
+                    <div>${qualityPrices.normal || 0}g</div>
+                    <div>${qualityPrices.silver || 0}g</div>
+                    <div>${qualityPrices.gold || 0}g</div>
+                    <div>${qualityPrices.iridium || 0}g</div>
                 </div>
             </div>
             
             <div class="note">
-                <strong>Notas:</strong> ${mushroom.notes}
+                <strong>Notas:</strong> ${mushroomNotes}
             </div>
         </div>
         `;
@@ -1794,12 +1882,12 @@ function getCropTypeName(type) {
 
 function getSuggestions() {
     const season = document.getElementById('season').value;
-    const year = parseInt(document.getElementById('year').value);
+    const year = parseInt(document.getElementById('year').value) || 1;
     
-    let filteredCrops = cropsDatabase.filter(crop => crop.year <= year);
+    let filteredCrops = (window.cropsDatabase || []).filter(crop => crop && crop.year <= year);
     
     if (season !== 'all') {
-        filteredCrops = filteredCrops.filter(crop => crop.seasons.includes(season));
+        filteredCrops = filteredCrops.filter(crop => crop && crop.seasons && crop.seasons.includes(season));
     }
     
     if (filteredCrops.length === 0) {
@@ -1818,15 +1906,15 @@ function getSuggestions() {
     
     // Encontrar los mejores cultivos por categoría
     const bestProfit = [...filteredCrops]
-        .filter(c => c.price > 0)
+        .filter(c => c && c.price > 0 && c.sellPrices && c.sellPrices.normal)
         .sort((a, b) => (b.sellPrices.normal - b.price) - (a.sellPrices.normal - a.price))[0];
     
     const bestDailyProfit = [...filteredCrops]
-        .filter(c => c.price > 0)
+        .filter(c => c && c.price > 0 && c.sellPrices && c.sellPrices.normal && c.growthTime)
         .sort((a, b) => ((b.sellPrices.normal - b.price) / b.growthTime) - ((a.sellPrices.normal - a.price) / a.growthTime))[0];
     
     const bestRegrow = [...filteredCrops]
-        .filter(c => c.regrowTime > 0)
+        .filter(c => c && c.regrowTime > 0)
         .sort((a, b) => {
             const totalHarvestsA = season === 'all' ? 3 : Math.floor(28 / (a.growthTime + a.regrowTime));
             const totalHarvestsB = season === 'all' ? 3 : Math.floor(28 / (b.growthTime + b.regrowTime));
@@ -1835,7 +1923,7 @@ function getSuggestions() {
             return totalProfitB - totalProfitA;
         })[0];
     
-    const seasonName = season === 'all' ? 'cualquier estación' : seasonTranslations[season];
+    const seasonName = season === 'all' ? 'cualquier estación' : seasonTranslations[season] || season;
     
     let suggestionsHTML = `<p>Para ${seasonName} del año ${year}:</p>`;
     
