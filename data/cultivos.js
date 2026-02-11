@@ -1220,7 +1220,20 @@ window.fishDatabase = [
         price: 1000,
         qualityPrices: { normal: 1000, silver: 1250, gold: 1500, iridium: 2000 },
         notes: "Uno de los 5 peces legendarios. Aparece en las alcantarillas."
-    }
+    },
+    {
+        id: "crimsonfish",
+        name: "Pez Carmesí",
+        category: "fish",
+        seasons: ["summer"],
+        locations: ["beach"],
+        weather: "both",
+        time: "morning,afternoon,evening",
+        difficulty: 95,
+        price: 1500,
+        qualityPrices: {normal: 1500,silver: 1875,gold: 2250,iridium: 3000},
+        notes: "Uno de los 5 peces legendarios. Se pesca en la playa (muelle este o oeste) durante el verano."
+    },
 ];
 
 // Productos Animales - Hacer global
