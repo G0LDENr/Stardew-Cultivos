@@ -1234,6 +1234,19 @@ window.fishDatabase = [
         qualityPrices: {normal: 1500,silver: 1875,gold: 2250,iridium: 3000},
         notes: "Uno de los 5 peces legendarios. Se pesca en la playa (muelle este o oeste) durante el verano."
     },
+    {
+        id: "rainbow_trout",
+        name: "Trucha Arcoíris",
+        category: "fish",
+        seasons: ["summer"],
+        locations: ["river", "mountain_lake"],
+        weather: "sunny",
+        time: "morning,afternoon",
+        difficulty: 45,
+        price: 65,
+        qualityPrices: {normal: 65,silver: 81,gold: 97,iridium: 130},
+        notes: "Pez común de verano. Se pesca de 6am a 7pm. Durante el Derby de la Trucha (20-21 Verano) se puede pescar todo el día sin restricción de clima. En el Estanque de peces (población 9+) tiene una mínima probabilidad (0.09% diario) de producir un Fragmento Prismático. Se puede obtener aleatoriamente en Cubos de Basura en verano, en el Carro Ambulante (195-1000g) o como regalo de un gato con máxima amistad."
+    },
 ];
 
 // Productos Animales - Hacer global
