@@ -1247,6 +1247,19 @@ window.fishDatabase = [
         qualityPrices: {normal: 65,silver: 81,gold: 97,iridium: 130},
         notes: "Pez común de verano. Se pesca de 6am a 7pm. Durante el Derby de la Trucha (20-21 Verano) se puede pescar todo el día sin restricción de clima. En el Estanque de peces (población 9+) tiene una mínima probabilidad (0.09% diario) de producir un Fragmento Prismático. Se puede obtener aleatoriamente en Cubos de Basura en verano, en el Carro Ambulante (195-1000g) o como regalo de un gato con máxima amistad."
     },
+    {
+        id: "angler",
+        name: "Rape",
+        category: "fish",
+        seasons: ["autumn"],
+        locations: ["pelican_town_river"],
+        weather: "both",
+        time: "any",
+        difficulty: 85,
+        price: 900,
+        qualityPrices: {normal: 900,silver: 1125,gold: 1350,iridium: 1800},
+        notes: "Uno de los 5 peces legendarios. Se pesca en el río al norte de MercaJoja en Otoño. Requiere nivel de pesca 3 (natural o con buff). Tiene un 20% de probabilidad de aparecer si se cumplen los requisitos (25% con Cebo Curiosidad). Solo se puede pescar uno por partida, pero desde 1.6 se pueden obtener más con Cebo Desafío o bateando con el encantamiento 'Pesquero'. Se puede criar en un Estanque de peces (capacidad 1) y produce Huevas de rape."
+    },
 ];
 
 // Productos Animales - Hacer global
